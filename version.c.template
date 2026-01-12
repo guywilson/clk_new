@@ -1,0 +1,12 @@
+#include "version.h"
+
+#define __BDATE__      "<BUILD_DATE>"
+#define __BVERSION__   "<BUILD_VERSION>"
+
+const char * getVersion(void) {
+    return __BVERSION__;
+}
+
+const char * getBuildDate(void) {
+    return __BDATE__;
+}
