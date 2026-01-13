@@ -4,7 +4,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "binaryfile.h"
+#include "binary.h"
 #include "logger.h"
 #include "clk_error.h"
 

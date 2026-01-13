@@ -4,8 +4,8 @@
 #include <string.h>
 #include <errno.h>
 
-#include "binaryfile.h"
-#include "cloakablefile.h"
+#include "binary.h"
+#include "cloakable.h"
 #include "logger.h"
 #include "clk_error.h"
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "cloakablefile.h"
+#include "cloakable.h"
 #include "version.h"
 
 using namespace std;
