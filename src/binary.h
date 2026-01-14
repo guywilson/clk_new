@@ -13,6 +13,7 @@ class BinaryFile {
         FILE * fptr;
 
         string fileName;
+        size_t fileLength;
 
     public:
         virtual void open(const string & filename) = 0;
@@ -21,6 +22,10 @@ class BinaryFile {
                 fclose(fptr);
                 fptr = NULL;
             }
+        }
+
+        size_t size() {
+            return fileLength;
         }
 };
 

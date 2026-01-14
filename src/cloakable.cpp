@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void CloakableInputFile::getFileLength() {
+void CloakableInputFile::calculateFileLength() {
     if (fptr != NULL) {
         long currentPos = ftell(fptr);
         fseek(fptr, 0, SEEK_END);
@@ -33,7 +33,7 @@ void CloakableInputFile::open(const string & filename) {
                 __LINE__);
     }
 
-    getFileLength();
+    calculateFileLength();
 
     this->fileName = filename;
 }

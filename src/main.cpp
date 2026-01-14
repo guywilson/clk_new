@@ -2,6 +2,7 @@
 #include <string>
 
 #include "cloakable.h"
+#include "cmdarg.h"
 #include "version.h"
 
 using namespace std;
