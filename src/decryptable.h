@@ -4,6 +4,7 @@
 
 #include "logger.h"
 #include "cloakable.h"
+#include "algorithm.h"
 #include "clk_error.h"
 
 using namespace std;
@@ -16,10 +17,14 @@ class DecryptableFile : public CloakableOutputFile {
         uint8_t * key;
         size_t keyLength;
 
+        EncryptionAlgorithm * algorithm;
+
         virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) = 0;
     
     public:
-        virtual size_t getBlockSize() = 0;
+        virtual size_t getBlockSize() {
+            return algorithm->getBlockSize();
+        }
 
         size_t writeBlock(uint8_t * buffer, size_t blockSize) override {
             decryptBlock(buffer, blockSize);
@@ -50,7 +55,22 @@ class AESDecryptableFile : public DecryptableFile {
         virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
     public:
-        size_t getBlockSize() override;
+        AESDecryptableFile() {
+            algorithm = new AESEncryptionAlgorithm();
+        }
+
+        LengthBlock extractInitialisationBlockFromBuffer(uint8_t * buffer) override {
+            LengthBlock block = CloakableOutputFile::extractInitialisationBlockFromBuffer(buffer);
+
+            size_t blockSize = algorithm->getBlockSize();
+
+            uint8_t * iv = (uint8_t *)malloc(blockSize);
+            memcpy(iv, &buffer[sizeof(LengthBlock)], blockSize);
+
+            algorithm->setIV(iv, blockSize);
+
+            return block;
+        }
 };
 
 class XORDecryptableFile : public DecryptableFile {
@@ -61,8 +81,9 @@ class XORDecryptableFile : public DecryptableFile {
         virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
     public:
-        size_t getBlockSize() override {
-            return (size_t)64;
+        XORDecryptableFile() {
+            algorithm = new XOREncryptionAlgorithm();
+            keyPointer = 0;
         }
 
         virtual void setKey(uint8_t * key, size_t keyLength) override;

@@ -12,21 +12,19 @@
 using namespace std;
 
 void AESEncryptableFile::encryptBlock(uint8_t * buffer, size_t bufferLength) {
-
-}
-
-size_t AESEncryptableFile::getBlockSize() {
-    size_t blockSize = 0;
-    return blockSize;
+    algorithm->encryptBlock(buffer, getBlockSize(), key, keyLength);
 }
 
 void XOREncryptableFile::encryptBlock(uint8_t * buffer, size_t bufferLength) {
-    size_t blockSize = getBlockSize();
-    keyPointer += blockSize;
-
     if (keyPointer > keyLength) {
         throw clk_error("Key overrun error", __FILE__, __LINE__);
     }
+
+    size_t blockSize = getBlockSize();
+
+    algorithm->encryptBlock(buffer, blockSize, &key[keyPointer], blockSize);
+
+    keyPointer += blockSize;
 }
 
 void XOREncryptableFile::setKey(uint8_t * key, size_t keyLength) {

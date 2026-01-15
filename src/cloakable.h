@@ -31,7 +31,7 @@ struct LengthBlock {
 };
 #pragma pack(pop)
 
-#define CLOAKED_LENGTH_FIELD_SIZE               sizeof(LengthBlock)
+#define CLOAKED_LENGTH_BLOCK_SIZE               sizeof(LengthBlock)
 
 class CloakableFile : public BinaryFile {
     protected:
@@ -47,7 +47,7 @@ class CloakableFile : public BinaryFile {
 
     public:
         size_t getLengthBufferSize() {
-            return CLOAKED_LENGTH_FIELD_SIZE;
+            return CLOAKED_LENGTH_BLOCK_SIZE;
         }
 };
 
@@ -60,8 +60,9 @@ class CloakableInputFile : public CloakableFile {
 
         virtual size_t readBlock(uint8_t * buffer, size_t blockSize);
 
-        void fillFileLengthBuffer(uint8_t * buffer, LengthBlock & length) {
-            memcpy(buffer, &length, CLOAKED_LENGTH_FIELD_SIZE);
+        virtual void fillInitialisationBlockBuffer(uint8_t * buffer) {
+            LengthBlock block = {(cloaked_len_t)size(), 0};
+            memcpy(buffer, &block, CLOAKED_LENGTH_BLOCK_SIZE);
         }
 };
 
@@ -71,12 +72,10 @@ class CloakableOutputFile : public CloakableFile {
 
         virtual size_t writeBlock(uint8_t * buffer, size_t blockSize);
 
-        LengthBlock extractFileLengthFromBuffer(uint8_t * buffer) {
-            LengthBlock length;
-
-            memcpy(&length, buffer, CLOAKED_LENGTH_FIELD_SIZE);
-
-            return length;
+        virtual LengthBlock extractInitialisationBlockFromBuffer(uint8_t * buffer) {
+            LengthBlock block;
+            memcpy(&block, buffer, CLOAKED_LENGTH_BLOCK_SIZE);
+            return block;
         }
 };
 
