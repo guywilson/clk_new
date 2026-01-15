@@ -46,7 +46,7 @@ class CloakableFile : public BinaryFile {
         }
 
     public:
-        size_t getLengthBufferSize() {
+        virtual size_t getInitialisationBufferSize() {
             return CLOAKED_LENGTH_BLOCK_SIZE;
         }
 };

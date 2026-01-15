@@ -26,6 +26,10 @@ class DecryptableFile : public CloakableOutputFile {
             return algorithm->getBlockSize();
         }
 
+        size_t getInitialisationBufferSize() override {
+            return CloakableFile::getInitialisationBufferSize() + getBlockSize();
+        }
+
         size_t writeBlock(uint8_t * buffer, size_t blockSize) override {
             decryptBlock(buffer, blockSize);
             size_t bytesWritten = CloakableOutputFile::writeBlock(buffer, blockSize);

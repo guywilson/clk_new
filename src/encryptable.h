@@ -26,6 +26,10 @@ class EncryptableFile : public CloakableInputFile {
             return algorithm->getBlockSize();
         }
 
+        size_t getInitialisationBufferSize() override {
+            return CloakableFile::getInitialisationBufferSize() + getBlockSize();
+        }
+
         size_t readBlock(uint8_t * buffer, size_t blockSize) override {
             size_t bytesRead = CloakableInputFile::readBlock(buffer, blockSize);
             encryptBlock(buffer, bytesRead);
