@@ -9,8 +9,8 @@
 
 using namespace std;
 
-#ifndef __INCL_ENCRYPTABLE
-#define __INCL_ENCRYPTABLE
+#ifndef __INCL_DECRYPTABLE
+#define __INCL_DECRYPTABLE
 
 class DecryptableFile : public CloakableOutputFile {
     protected:
@@ -22,19 +22,35 @@ class DecryptableFile : public CloakableOutputFile {
         virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) = 0;
     
     public:
-        virtual size_t getBlockSize() {
+        size_t getBlockSize() override {
             return algorithm->getBlockSize();
         }
 
-        size_t getInitialisationBufferSize() override {
-            return CloakableFile::getInitialisationBufferSize() + getBlockSize();
+        size_t getInitialisationBlockBufferSize() override {
+            return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
         }
 
-        size_t writeBlock(uint8_t * buffer, size_t blockSize) override {
+        inline size_t getBytesLeftToWrite() {
+            return bytesLeftToWrite;
+        }
+
+        inline size_t getBytesToWrite() {
+            return (getBytesLeftToWrite() >= getBlockSize() ? getBlockSize() : getBytesLeftToWrite());
+        }
+
+        size_t writeBlock(uint8_t * buffer, size_t bytesToWrite) override {
+            size_t blockSize = getBlockSize();
+
             decryptBlock(buffer, blockSize);
-            size_t bytesWritten = CloakableOutputFile::writeBlock(buffer, blockSize);
+            size_t bytesWritten = CloakableOutputFile::writeBlock(buffer, bytesToWrite);
+
+            bytesLeftToWrite -= bytesWritten;
 
             return bytesWritten;
+        }
+
+        size_t writeBlock(uint8_t * buffer) {
+            return writeBlock(buffer, getBytesToWrite());
         }
 
         virtual void setKey(uint8_t * key, size_t keyLength) {
@@ -58,20 +74,22 @@ class AESDecryptableFile : public DecryptableFile {
     protected:
         virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
+        void extractAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) override {
+            size_t blockSize = algorithm->getBlockSize();
+
+            uint8_t * iv = (uint8_t *)malloc(blockSize);
+            memcpy(iv, &initialisationBlockBuffer[sizeof(LengthBlock)], blockSize);
+
+            algorithm->setIV(iv, blockSize);
+        }
+
     public:
         AESDecryptableFile() {
             algorithm = new AESEncryptionAlgorithm();
         }
 
-        LengthBlock extractInitialisationBlockFromBuffer(uint8_t * buffer) override {
-            LengthBlock block = CloakableOutputFile::extractInitialisationBlockFromBuffer(buffer);
-
-            size_t blockSize = algorithm->getBlockSize();
-
-            uint8_t * iv = (uint8_t *)malloc(blockSize);
-            memcpy(iv, &buffer[sizeof(LengthBlock)], blockSize);
-
-            algorithm->setIV(iv, blockSize);
+        LengthBlock extractInitialisationBlockFromBuffer(uint8_t * initialisationBlockBuffer) override {
+            LengthBlock block = CloakableOutputFile::extractInitialisationBlockFromBuffer(initialisationBlockBuffer);
 
             return block;
         }

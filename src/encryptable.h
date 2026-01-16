@@ -22,16 +22,16 @@ class EncryptableFile : public CloakableInputFile {
         virtual void encryptBlock(uint8_t * buffer, size_t bufferLength) = 0;
     
     public:
-        virtual size_t getBlockSize() {
+        size_t getBlockSize() override {
             return algorithm->getBlockSize();
         }
 
-        size_t getInitialisationBufferSize() override {
-            return CloakableFile::getInitialisationBufferSize() + getBlockSize();
+        size_t getInitialisationBlockBufferSize() override {
+            return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
         }
 
-        size_t readBlock(uint8_t * buffer, size_t blockSize) override {
-            size_t bytesRead = CloakableInputFile::readBlock(buffer, blockSize);
+        size_t readBlock(uint8_t * buffer) override {
+            size_t bytesRead = CloakableInputFile::readBlock(buffer);
             encryptBlock(buffer, bytesRead);
 
             return bytesRead;
@@ -64,19 +64,21 @@ class AESEncryptableFile : public EncryptableFile {
     protected:
         virtual void encryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
+        void addAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) override {
+            uint8_t * iv = algorithm->getIV();
+            memcpy(&initialisationBlockBuffer[CLOAKED_LENGTH_BLOCK_SIZE], iv, getBlockSize());
+        }
+
     public:
         AESEncryptableFile() {
             algorithm = new AESEncryptionAlgorithm();
         }
 
-        void fillInitialisationBlockBuffer(uint8_t * buffer) override  {
+        void fillInitialisationBlockBuffer(uint8_t * initialisationBlockBuffer) override  {
             LengthBlock block = {(cloaked_len_t)size(), (uint8_t)getEncryptedFileSizeDifference()};
 
-            memcpy(buffer, &block, CLOAKED_LENGTH_BLOCK_SIZE);
-
-            uint8_t * iv = algorithm->getIV();
-
-            memcpy(&buffer[CLOAKED_LENGTH_BLOCK_SIZE], iv, getBlockSize());
+            memcpy(initialisationBlockBuffer, &block, CLOAKED_LENGTH_BLOCK_SIZE);
+            addAdditionalInitialisationBlock(initialisationBlockBuffer);
         }
 };
 

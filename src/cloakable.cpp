@@ -38,7 +38,9 @@ void CloakableInputFile::open(const string & filename) {
     this->fileName = filename;
 }
 
-size_t CloakableInputFile::readBlock(uint8_t * buffer, size_t blockSize) {
+size_t CloakableInputFile::readBlock(uint8_t * buffer) {
+    size_t blockSize = getBlockSize();
+
     size_t bytesRead = fread(buffer, sizeof(uint8_t), blockSize, fptr);
 
     if (bytesRead < blockSize) {
@@ -77,17 +79,17 @@ void CloakableOutputFile::open(const string & filename) {
     this->fileName = filename;
 }
 
-size_t CloakableOutputFile::writeBlock(uint8_t * buffer, size_t blockSize) {
-    size_t bytesWritten = fwrite(buffer, sizeof(uint8_t), blockSize, fptr);
+size_t CloakableOutputFile::writeBlock(uint8_t * buffer, size_t bytesToWrite) {
+    size_t bytesWritten = fwrite(buffer, sizeof(uint8_t), bytesToWrite, fptr);
 
-    if (bytesWritten < blockSize) {
+    if (bytesWritten < bytesToWrite) {
         int error = ferror(fptr);
 
         if (error) {
             throw clk_error(
                     clk_error::buildMsg(
                         "Failed to write %u bytes to '%s'", 
-                        blockSize, 
+                        bytesToWrite, 
                         fileName.c_str()),
                     __FILE__,
                     __LINE__);
