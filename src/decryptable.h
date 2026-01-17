@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <string.h>
 #include <stdlib.h>
@@ -5,6 +6,7 @@
 #include "logger.h"
 #include "cloakable.h"
 #include "algorithm.h"
+#include "xdump.h"
 #include "clk_error.h"
 
 using namespace std;
@@ -39,12 +41,23 @@ class DecryptableFile : public CloakableOutputFile {
         }
 
         size_t writeBlock(uint8_t * buffer, size_t bytesToWrite) override {
+            log.entry("DecryptableFile::writeBlock()");
+
             size_t blockSize = getBlockSize();
 
-            decryptBlock(buffer, blockSize);
-            size_t bytesWritten = CloakableOutputFile::writeBlock(buffer, bytesToWrite);
+            cout << "Extracted block:" << endl;
+            hexDump(buffer, blockSize);
 
+            decryptBlock(buffer, blockSize);
+
+            cout << "Decrypted block:" << endl;
+            hexDump(buffer, blockSize);
+
+            size_t bytesWritten = CloakableOutputFile::writeBlock(buffer, bytesToWrite);
+            
             bytesLeftToWrite -= bytesWritten;
+
+            log.exit("DecryptableFile::writeBlock()");
 
             return bytesWritten;
         }
@@ -75,12 +88,16 @@ class AESDecryptableFile : public DecryptableFile {
         virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
         void extractAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) override {
+            log.entry("AESDecryptableFile::extractAdditionalInitialisationBlock()");
+
             size_t blockSize = algorithm->getBlockSize();
 
             uint8_t * iv = (uint8_t *)malloc(blockSize);
             memcpy(iv, &initialisationBlockBuffer[sizeof(LengthBlock)], blockSize);
 
             algorithm->setIV(iv, blockSize);
+
+            log.exit("AESDecryptableFile::extractAdditionalInitialisationBlock()");
         }
 
     public:

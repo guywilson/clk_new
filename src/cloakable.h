@@ -7,6 +7,7 @@
 #include "binary.h"
 #include "algorithm.h"
 #include "logger.h"
+#include "xdump.h"
 #include "clk_error.h"
 
 using namespace std;
@@ -38,6 +39,8 @@ class CloakableFile : public BinaryFile {
     protected:
         int blockNum = 0;
 
+        Logger & log = Logger::getInstance();
+
         int getBlockNum() {
             return blockNum;
         }
@@ -52,19 +55,29 @@ class CloakableFile : public BinaryFile {
         }
 
         virtual uint8_t * getInitialisationBlockBuffer() {
+            log.entry("CloakableFile::getInitialisationBlockBuffer()");
+
             size_t initialisationBlockSize = getInitialisationBlockBufferSize();
             uint8_t * initialisationBlockBuffer = (uint8_t *)malloc(initialisationBlockSize);
 
             if (initialisationBlockBuffer == NULL) {
+                log.error("Failed to allocate %u bytes for initialisation block", initialisationBlockSize);
+
                 throw clk_error(
                         clk_error::buildMsg(
-                            "Failed to allocate %u bytes for the initialisation block", 
+                            "Failed to allocate %zu bytes for the initialisation block", 
                             initialisationBlockSize), 
                         __FILE__, 
                         __LINE__);
             }
 
+            log.exit("CloakableFile::getInitialisationBlockBuffer()");
+
             return initialisationBlockBuffer;
+        }
+
+        inline void resetBlockCounter() {
+            blockNum = 0;
         }
 
         virtual inline size_t getBlockSize() {
@@ -79,7 +92,7 @@ class CloakableFile : public BinaryFile {
             if (block == NULL) {
                 throw clk_error(
                     clk_error::buildMsg(
-                        "Failed to allocate %u bytes for block",
+                        "Failed to allocate %zu bytes for block",
                         blockSize), 
                     __FILE__, 
                     __LINE__);
@@ -99,18 +112,29 @@ class CloakableInputFile : public CloakableFile {
     public:
         void open(const string & filename) override;
 
-        virtual size_t readBlock(uint8_t * buffer);
+        virtual size_t readBlock(uint8_t * buffer) {
+            return readBlock(buffer, getBlockSize());
+        }
+
+        size_t readBlock(uint8_t * buffer, size_t bytesToRead);
 
         virtual inline bool hasMoreBlocks() {
             return ((getBlockSize() * getBlockNum()) < size() ? true : false);            
         }
 
         virtual void fillInitialisationBlockBuffer(uint8_t * initialisationBlockBuffer) {
+            log.entry("CloakableInputFile::fillInitialisationBlockBuffer()");
             LengthBlock block = {(cloaked_len_t)size(), 0};
 
             memcpy(initialisationBlockBuffer, &block, getInitialisationBlockBufferSize());
 
             addAdditionalInitialisationBlock(initialisationBlockBuffer);
+
+            if (log.isLogLevel(LOG_LEVEL_INFO)) {
+                hexDump(initialisationBlockBuffer, getInitialisationBlockBufferSize());
+            }
+
+            log.exit("CloakableInputFile::fillInitialisationBlockBuffer()");
         }
 };
 
@@ -128,14 +152,24 @@ class CloakableOutputFile : public CloakableFile {
         virtual size_t writeBlock(uint8_t * buffer, size_t bytesToWrite);
 
         virtual LengthBlock extractInitialisationBlockFromBuffer(uint8_t * initialisationBlockBuffer) {
+            log.entry("CloakableOutputFile::extractInitialisationBlockFromBuffer()");
+
             LengthBlock block;
             memcpy(&block, initialisationBlockBuffer, CLOAKED_LENGTH_BLOCK_SIZE);
 
+            log.debug(
+                "Extracted length block: fileLength = %zu, encryptedIncrease = %zu", 
+                (size_t)block.originalFileLength, 
+                (size_t)block.encryptedLengthIncrease);
+
             actualFileLength = block.originalFileLength;
             encryptedFileLength = block.originalFileLength + block.encryptedLengthIncrease;
+
             bytesLeftToWrite = actualFileLength;
 
             extractAdditionalInitialisationBlock(initialisationBlockBuffer);
+
+            log.exit("CloakableOutputFile::extractInitialisationBlockFromBuffer()");
 
             return block;
         }

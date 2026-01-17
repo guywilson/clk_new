@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <string.h>
 #include <stdlib.h>
@@ -5,6 +6,7 @@
 #include "logger.h"
 #include "cloakable.h"
 #include "algorithm.h"
+#include "xdump.h"
 #include "clk_error.h"
 
 using namespace std;
@@ -31,8 +33,19 @@ class EncryptableFile : public CloakableInputFile {
         }
 
         size_t readBlock(uint8_t * buffer) override {
+            size_t blockSize = getBlockSize();
+
+            memset(buffer, 0, blockSize);
+
             size_t bytesRead = CloakableInputFile::readBlock(buffer);
-            encryptBlock(buffer, bytesRead);
+
+            cout << "Read block:" << endl;
+            hexDump(buffer, bytesRead);
+
+            encryptBlock(buffer, blockSize);
+
+            cout << "Encrypted block:" << endl;
+            hexDump(buffer, blockSize);
 
             return bytesRead;
         }
@@ -58,7 +71,15 @@ class AESEncryptableFile : public EncryptableFile {
     private:
         size_t getEncryptedFileSizeDifference() {
             size_t blockSize = algorithm->getBlockSize();
-            return (blockSize - (size() % blockSize)) + blockSize;
+            size_t difference = 0;
+
+            size_t remainder = size() % blockSize;
+
+            if (remainder) {
+                difference = blockSize - remainder;
+            }
+
+            return difference;
         }
 
     protected:
@@ -75,10 +96,19 @@ class AESEncryptableFile : public EncryptableFile {
         }
 
         void fillInitialisationBlockBuffer(uint8_t * initialisationBlockBuffer) override  {
+            log.entry("AESEncryptableFile::fillInitialisationBlockBuffer()");
+
             LengthBlock block = {(cloaked_len_t)size(), (uint8_t)getEncryptedFileSizeDifference()};
+
+            log.debug(
+                "Length block: originalSize = %zu, encryptedDiff = %zu", 
+                (size_t)block.originalFileLength, 
+                (size_t)block.encryptedLengthIncrease);
 
             memcpy(initialisationBlockBuffer, &block, CLOAKED_LENGTH_BLOCK_SIZE);
             addAdditionalInitialisationBlock(initialisationBlockBuffer);
+
+            log.exit("AESEncryptableFile::fillInitialisationBlockBuffer()");
         }
 };
 

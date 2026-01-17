@@ -12,15 +12,23 @@
 using namespace std;
 
 void CloakableInputFile::calculateFileLength() {
+    log.entry("CloakableInputFile::calculateFileLength()");
+
     if (fptr != NULL) {
         long currentPos = ftell(fptr);
         fseek(fptr, 0, SEEK_END);
         fileLength = (size_t)ftell(fptr);
         fseek(fptr, currentPos, SEEK_SET);
     }
+
+    log.debug("Got file length as %u", fileLength);
+
+    log.exit("CloakableInputFile::calculateFileLength()");
 }
 
 void CloakableInputFile::open(const string & filename) {
+    log.entry("CloakableInputFile::open()");
+
     fptr = fopen(filename.c_str(), "rb");
 
     if (fptr == NULL) {
@@ -36,22 +44,26 @@ void CloakableInputFile::open(const string & filename) {
     calculateFileLength();
 
     this->fileName = filename;
+
+    log.exit("CloakableInputFile::open()");
 }
 
-size_t CloakableInputFile::readBlock(uint8_t * buffer) {
-    size_t blockSize = getBlockSize();
+size_t CloakableInputFile::readBlock(uint8_t * buffer, size_t bytesToRead) {
+    log.entry("CloakableInputFile::readBlock()");
 
-    size_t bytesRead = fread(buffer, sizeof(uint8_t), blockSize, fptr);
+    size_t bytesRead = fread(buffer, sizeof(uint8_t), bytesToRead, fptr);
 
-    if (bytesRead < blockSize) {
+    log.debug("Read %zu bytes from '%s'", bytesRead, fileName.c_str());
+
+    if (bytesRead < bytesToRead) {
         if (!feof(fptr)) {
             int error = ferror(fptr);
 
             if (error) {
                 throw clk_error(
                         clk_error::buildMsg(
-                            "Failed to read %u bytes from '%s'", 
-                            blockSize, 
+                            "Failed to read %zu bytes from '%s'", 
+                            bytesToRead, 
                             fileName.c_str()),
                         __FILE__,
                         __LINE__);
@@ -59,11 +71,17 @@ size_t CloakableInputFile::readBlock(uint8_t * buffer) {
         }
     }
 
+    blockNum++;
+
+    log.exit("CloakableInputFile::readBlock()");
+
     return bytesRead;
 }
 
 
 void CloakableOutputFile::open(const string & filename) {
+    log.entry("CloakableOutputFile::open()");
+
     fptr = fopen(filename.c_str(), "wb");
 
     if (fptr == NULL) {
@@ -77,10 +95,16 @@ void CloakableOutputFile::open(const string & filename) {
     }
 
     this->fileName = filename;
+
+    log.exit("CloakableOutputFile::open()");
 }
 
 size_t CloakableOutputFile::writeBlock(uint8_t * buffer, size_t bytesToWrite) {
+    log.entry("CloakableOutputFile::writeBlock()");
+
     size_t bytesWritten = fwrite(buffer, sizeof(uint8_t), bytesToWrite, fptr);
+
+    log.debug("Wrote %zu bytes to file '%s'", bytesWritten, fileName.c_str());
 
     if (bytesWritten < bytesToWrite) {
         int error = ferror(fptr);
@@ -88,13 +112,15 @@ size_t CloakableOutputFile::writeBlock(uint8_t * buffer, size_t bytesToWrite) {
         if (error) {
             throw clk_error(
                     clk_error::buildMsg(
-                        "Failed to write %u bytes to '%s'", 
+                        "Failed to write %zu bytes to '%s'", 
                         bytesToWrite, 
                         fileName.c_str()),
                     __FILE__,
                     __LINE__);
         }
     }
+
+    log.exit("CloakableOutputFile::writeBlock()");
 
     return bytesWritten;
 }

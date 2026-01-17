@@ -44,12 +44,19 @@ class AESEncryptionAlgorithm : public EncryptionAlgorithm {
             return blockNum == 0 ? true : false;
         }
 
+        void open();
+        void generateIV();
+        void setIVFromBuffer(uint8_t * iv);
+        void setKey(uint8_t * key, size_t keyLength);
+        void encryptBlock(uint8_t * buffer);
+        void decryptBlock(uint8_t * buffer);
+
     public:
         AESEncryptionAlgorithm();
         ~AESEncryptionAlgorithm();
 
-        void encryptBlock(uint8_t * buffer, size_t bufferLength, uint8_t * key, size_t keyLength) override;
-        void decryptBlock(uint8_t * buffer, size_t bufferLength, uint8_t * key, size_t keyLength) override;
+        void encryptBlock(uint8_t * buffer, size_t blockSize, uint8_t * key, size_t keyLength) override;
+        void decryptBlock(uint8_t * buffer, size_t blockSize, uint8_t * key, size_t keyLength) override;
 
         size_t getBlockSize() override;
 

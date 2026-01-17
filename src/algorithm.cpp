@@ -8,9 +8,7 @@
 
 using namespace std;
 
-AESEncryptionAlgorithm::AESEncryptionAlgorithm() {
-    blockNum = 0;
-
+void AESEncryptionAlgorithm::open() {
     gcry_error_t error = 
             gcry_cipher_open(
                         &handle,
@@ -27,6 +25,93 @@ AESEncryptionAlgorithm::AESEncryptionAlgorithm() {
                 __FILE__,
                 __LINE__);
     }
+}
+
+void AESEncryptionAlgorithm::generateIV() {
+    size_t blockSize = getBlockSize();
+    iv = (uint8_t *)malloc(blockSize);
+
+    if (iv == NULL) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to allocate %u bytes for cipher IV", 
+                    blockSize), 
+                __FILE__, 
+                __LINE__);
+    }
+
+    gcry_randomize(iv, blockSize, GCRY_STRONG_RANDOM);
+
+    setIVFromBuffer(iv);
+}
+
+void AESEncryptionAlgorithm::setIVFromBuffer(uint8_t * iv) {
+    size_t blockSize = getBlockSize();
+
+    gcry_error_t error = gcry_cipher_setiv(handle, iv, blockSize);
+
+    if (error) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to set cipher IV with gcrypt: %s/%s", 
+                    gcry_strerror(error),
+                    gcry_strsource(error)),
+                __FILE__,
+                __LINE__);
+    }
+}
+
+void AESEncryptionAlgorithm::setKey(uint8_t * key, size_t keyLength) {
+    gcry_error_t error = gcry_cipher_setkey(handle, (void *)key, keyLength);
+
+    if (error) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to set cipher key with gcrypt: %s/%s", 
+                    gcry_strerror(error),
+                    gcry_strsource(error)),
+                __FILE__,
+                __LINE__);
+    }
+}
+
+void AESEncryptionAlgorithm::encryptBlock(uint8_t * buffer) {
+    size_t blockSize = getBlockSize();
+
+    gcry_error_t error = gcry_cipher_encrypt(handle, buffer, blockSize, NULL, 0);
+
+    if (error) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to encrypt block with gcrypt: %s/%s", 
+                    gcry_strerror(error),
+                    gcry_strsource(error)),
+                __FILE__,
+                __LINE__);
+    }
+}
+
+void AESEncryptionAlgorithm::decryptBlock(uint8_t * buffer) {
+    size_t blockSize = getBlockSize();
+    
+    gcry_error_t error = gcry_cipher_decrypt(handle, buffer, blockSize, NULL, 0);
+
+    if (error) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to decrypt block with gcrypt: %s/%s", 
+                    gcry_strerror(error),
+                    gcry_strsource(error)),
+                __FILE__,
+                __LINE__);
+    }
+}
+
+AESEncryptionAlgorithm::AESEncryptionAlgorithm() {
+    blockNum = 0;
+
+    open();
+    generateIV();
 }
 
 AESEncryptionAlgorithm::~AESEncryptionAlgorithm() {
@@ -56,105 +141,22 @@ void AESEncryptionAlgorithm::setIV(uint8_t * buffer, size_t bufferLength) {
 }
 
 void AESEncryptionAlgorithm::encryptBlock(uint8_t * buffer, size_t bufferLength, uint8_t * key, size_t keyLength) {
-    gcry_error_t error = 0;
-
     if (isFirstBlock()) {
-        size_t blockSize = getBlockSize();
-        iv = (uint8_t *)malloc(blockSize);
-
-        if (iv == NULL) {
-            throw clk_error(
-                    clk_error::buildMsg(
-                        "Failed to allocate %u bytes for cipher IV", 
-                        blockSize), 
-                    __FILE__, 
-                    __LINE__);
-        }
-
-        gcry_randomize(iv, blockSize, GCRY_STRONG_RANDOM);
-
-        error = gcry_cipher_setiv(handle, iv, blockSize);
-
-        if (error) {
-            throw clk_error(
-                    clk_error::buildMsg(
-                        "Failed to set cipher IV with gcrypt: %s/%s", 
-                        gcry_strerror(error),
-                        gcry_strsource(error)),
-                    __FILE__,
-                    __LINE__);
-        }
-
-        error = gcry_cipher_setkey(handle, (void *)key, keyLength);
-
-        if (error) {
-            throw clk_error(
-                    clk_error::buildMsg(
-                        "Failed to set cipher key with gcrypt: %s/%s", 
-                        gcry_strerror(error),
-                        gcry_strsource(error)),
-                    __FILE__,
-                    __LINE__);
-        }
+        setKey(key, keyLength);
     }
 
-    error = gcry_cipher_encrypt(handle, buffer, bufferLength, NULL, 0);
-
-    if (error) {
-        throw clk_error(
-                clk_error::buildMsg(
-                    "Failed to encrypt block with gcrypt: %s/%s", 
-                    gcry_strerror(error),
-                    gcry_strsource(error)),
-                __FILE__,
-                __LINE__);
-    }
+    encryptBlock(buffer);
 
     blockNum++;
 }
 
 void AESEncryptionAlgorithm::decryptBlock(uint8_t * buffer, size_t bufferLength, uint8_t * key, size_t keyLength) {
-    gcry_error_t error = 0;
-
     if (isFirstBlock()) {
-        size_t blockSize = getBlockSize();
-
-        error = gcry_cipher_setiv(handle, iv, blockSize);
-
-        if (error) {
-            throw clk_error(
-                    clk_error::buildMsg(
-                        "Failed to set cipher IV with gcrypt: %s/%s", 
-                        gcry_strerror(error),
-                        gcry_strsource(error)),
-                    __FILE__,
-                    __LINE__);
-        }
-
-        error = gcry_cipher_setkey(handle, (void *)key, keyLength);
-
-        if (error) {
-            throw clk_error(
-                    clk_error::buildMsg(
-                        "Failed to set cipher key with gcrypt: %s/%s", 
-                        gcry_strerror(error),
-                        gcry_strsource(error)),
-                    __FILE__,
-                    __LINE__);
-        }
+        setIVFromBuffer(iv);
+        setKey(key, keyLength);
     }
 
-    error = gcry_cipher_encrypt(handle, buffer, bufferLength, NULL, 0);
-
-    if (error) {
-        throw clk_error(
-                clk_error::buildMsg(
-                    "Failed to encrypt block with gcrypt: %s/%s", 
-                    gcry_strerror(error),
-                    gcry_strsource(error)),
-                __FILE__,
-                __LINE__);
-    }
+    decryptBlock(buffer);
 
     blockNum++;
 }

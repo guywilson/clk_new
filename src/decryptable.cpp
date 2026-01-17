@@ -16,6 +16,8 @@ void AESDecryptableFile::decryptBlock(uint8_t * buffer, size_t bufferLength) {
 }
 
 void XORDecryptableFile::decryptBlock(uint8_t * buffer, size_t bufferLength) {
+    log.entry("XORDecryptableFile::decryptBlock()");
+
     if (keyPointer > keyLength) {
         throw clk_error("Key overrun error", __FILE__, __LINE__);
     }
@@ -25,6 +27,8 @@ void XORDecryptableFile::decryptBlock(uint8_t * buffer, size_t bufferLength) {
     algorithm->decryptBlock(buffer, blockSize, &key[keyPointer], blockSize);
 
     keyPointer += blockSize;
+
+    log.exit("XORDecryptableFile::decryptBlock()");
 }
 
 void XORDecryptableFile::setKey(uint8_t * key, size_t keyLength) {
