@@ -24,6 +24,18 @@ class DecryptableFile : public CloakableOutputFile {
         virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) = 0;
     
     public:
+        virtual ~DecryptableFile() {
+            if (key) {
+                free(key);
+                key = nullptr;
+            }
+
+            delete algorithm;
+            algorithm = nullptr;
+
+            close();
+        }
+
         size_t getBlockSize() override {
             return algorithm->getBlockSize();
         }
@@ -81,7 +93,7 @@ class DecryptableFile : public CloakableOutputFile {
 
 class AESDecryptableFile : public DecryptableFile {
     protected:
-        virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
+        void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
         void extractAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) override {
             log.entry("AESDecryptableFile::extractAdditionalInitialisationBlock()");
@@ -117,7 +129,7 @@ class XORDecryptableFile : public DecryptableFile {
         size_t keyPointer;
 
     protected:
-        virtual void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
+        void decryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
     public:
         XORDecryptableFile() {

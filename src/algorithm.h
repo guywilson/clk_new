@@ -12,6 +12,10 @@ using namespace std;
 
 class EncryptionAlgorithm {
     public:
+        virtual ~EncryptionAlgorithm() {
+
+        }
+        
         virtual void encryptBlock(uint8_t * buffer, size_t bufferLength, uint8_t * key, size_t keyLength) {
             return;
         }

@@ -19,11 +19,23 @@ class EncryptableFile : public CloakableInputFile {
         uint8_t * key;
         size_t keyLength;
 
-        EncryptionAlgorithm * algorithm;
+        EncryptionAlgorithm * algorithm = nullptr;
 
         virtual void encryptBlock(uint8_t * buffer, size_t bufferLength) = 0;
     
     public:
+        virtual ~EncryptableFile() {
+            if (key) {
+                free(key);
+                key = nullptr;
+            }
+
+            delete algorithm;
+            algorithm = nullptr;
+
+            close();
+        }
+
         size_t getBlockSize() override {
             return algorithm->getBlockSize();
         }
@@ -79,7 +91,7 @@ class AESEncryptableFile : public EncryptableFile {
         }
 
     protected:
-        virtual void encryptBlock(uint8_t * buffer, size_t bufferLength) override;
+        void encryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
         void addAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) override {
             uint8_t * iv = algorithm->getIV();
@@ -117,7 +129,7 @@ class XOREncryptableFile : public EncryptableFile {
         size_t keyPointer;
 
     protected:
-        virtual void encryptBlock(uint8_t * buffer, size_t bufferLength) override;
+        void encryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
     public:
         XOREncryptableFile() {

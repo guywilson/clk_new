@@ -1,45 +1,88 @@
-[2026-01-18 09:45:40.685224] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
-[2026-01-18 09:45:40.685866] [EXIT]CloakableFile::getInitialisationBlockBuffer()
-[2026-01-18 09:45:40.685877] [ENTRY]CloakableOutputFile::open()
-[2026-01-18 09:45:40.685981] [EXIT]CloakableOutputFile::open()
-[2026-01-18 09:45:40.685991] [ENTRY]CloakableInputFile::open()
-[2026-01-18 09:45:40.686039] [ENTRY]CloakableInputFile::calculateFileLength()
-[2026-01-18 09:45:40.686057] [DEBUG]Got file length as 55
-[2026-01-18 09:45:40.686064] [EXIT]CloakableInputFile::calculateFileLength()
-[2026-01-18 09:45:40.686069] [EXIT]CloakableInputFile::open()
-[2026-01-18 09:45:40.686074] [ENTRY]CloakableInputFile::fillInitialisationBlockBuffer()
-[2026-01-18 09:45:40.686098] [EXIT]CloakableInputFile::fillInitialisationBlockBuffer()
-[2026-01-18 09:45:40.686104] [ENTRY]CloakableOutputFile::writeBlock()
-[2026-01-18 09:45:40.686113] [DEBUG]Wrote 5 bytes to file '/Users/guy/test.xor'
-[2026-01-18 09:45:40.686119] [EXIT]CloakableOutputFile::writeBlock()
-[2026-01-18 09:45:40.686125] [ENTRY]CloakableInputFile::readBlock()
-[2026-01-18 09:45:40.686132] [DEBUG]Read 55 bytes from '/Users/guy/test.dat'
-[2026-01-18 09:45:40.686137] [EXIT]CloakableInputFile::readBlock()
-[2026-01-18 09:45:40.686183] [ENTRY]CloakableOutputFile::writeBlock()
-[2026-01-18 09:45:40.686189] [DEBUG]Wrote 64 bytes to file '/Users/guy/test.xor'
-[2026-01-18 09:45:40.686208] [EXIT]CloakableOutputFile::writeBlock()
-[2026-01-18 09:45:40.692785] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
-[2026-01-18 09:45:40.692831] [EXIT]CloakableFile::getInitialisationBlockBuffer()
-[2026-01-18 09:45:40.692844] [ENTRY]CloakableInputFile::open()
-[2026-01-18 09:45:40.692921] [ENTRY]CloakableInputFile::calculateFileLength()
-[2026-01-18 09:45:40.692959] [DEBUG]Got file length as 69
-[2026-01-18 09:45:40.692973] [EXIT]CloakableInputFile::calculateFileLength()
-[2026-01-18 09:45:40.692982] [EXIT]CloakableInputFile::open()
-[2026-01-18 09:45:40.692990] [ENTRY]CloakableInputFile::readBlock()
-[2026-01-18 09:45:40.693000] [DEBUG]Read 5 bytes from '/Users/guy/test.xor'
-[2026-01-18 09:45:40.693009] [EXIT]CloakableInputFile::readBlock()
-[2026-01-18 09:45:40.693016] [ENTRY]CloakableOutputFile::open()
-[2026-01-18 09:45:40.693161] [EXIT]CloakableOutputFile::open()
-[2026-01-18 09:45:40.693177] [ENTRY]CloakableOutputFile::extractInitialisationBlockFromBuffer()
-[2026-01-18 09:45:40.693189] [DEBUG]Extracted length block: fileLength = 55, encryptedIncrease = 0
-[2026-01-18 09:45:40.693199] [EXIT]CloakableOutputFile::extractInitialisationBlockFromBuffer()
-[2026-01-18 09:45:40.693207] [ENTRY]CloakableInputFile::readBlock()
-[2026-01-18 09:45:40.693214] [DEBUG]Read 64 bytes from '/Users/guy/test.xor'
-[2026-01-18 09:45:40.693221] [EXIT]CloakableInputFile::readBlock()
-[2026-01-18 09:45:40.693254] [ENTRY]DecryptableFile::writeBlock()
-[2026-01-18 09:45:40.693299] [ENTRY]XORDecryptableFile::decryptBlock()
-[2026-01-18 09:45:40.693309] [EXIT]XORDecryptableFile::decryptBlock()
-[2026-01-18 09:45:40.693331] [ENTRY]CloakableOutputFile::writeBlock()
-[2026-01-18 09:45:40.693350] [DEBUG]Wrote 55 bytes to file '/Users/guy/out.dat'
-[2026-01-18 09:45:40.693361] [EXIT]CloakableOutputFile::writeBlock()
-[2026-01-18 09:45:40.693368] [EXIT]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.618609] [ENTRY]CloakableInputFile::open()
+[2026-01-18 13:27:19.619257] [ENTRY]CloakableInputFile::calculateFileLength()
+[2026-01-18 13:27:19.619290] [DEBUG]Got file length as 55
+[2026-01-18 13:27:19.619303] [EXIT]CloakableInputFile::calculateFileLength()
+[2026-01-18 13:27:19.619311] [EXIT]CloakableInputFile::open()
+[2026-01-18 13:27:19.619319] [ENTRY]CloakableOutputFile::open()
+[2026-01-18 13:27:19.619476] [EXIT]CloakableOutputFile::open()
+[2026-01-18 13:27:19.619491] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 13:27:19.619498] [EXIT]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 13:27:19.619504] [ENTRY]AESEncryptableFile::fillInitialisationBlockBuffer()
+[2026-01-18 13:27:19.619510] [DEBUG]Length block: originalSize = 55, encryptedDiff = 9
+[2026-01-18 13:27:19.619516] [EXIT]AESEncryptableFile::fillInitialisationBlockBuffer()
+[2026-01-18 13:27:19.619522] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619535] [DEBUG]Wrote 21 bytes to file '/Users/guy/test.enc'
+[2026-01-18 13:27:19.619543] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619549] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619555] [DEBUG]Read 16 bytes from '/Users/guy/test.dat'
+[2026-01-18 13:27:19.619561] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619622] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619636] [DEBUG]Wrote 16 bytes to file '/Users/guy/test.enc'
+[2026-01-18 13:27:19.619646] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619652] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619657] [DEBUG]Read 16 bytes from '/Users/guy/test.dat'
+[2026-01-18 13:27:19.619663] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619679] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619686] [DEBUG]Wrote 16 bytes to file '/Users/guy/test.enc'
+[2026-01-18 13:27:19.619692] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619698] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619703] [DEBUG]Read 16 bytes from '/Users/guy/test.dat'
+[2026-01-18 13:27:19.619708] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619723] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619730] [DEBUG]Wrote 16 bytes to file '/Users/guy/test.enc'
+[2026-01-18 13:27:19.619736] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619741] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619761] [DEBUG]Read 7 bytes from '/Users/guy/test.dat'
+[2026-01-18 13:27:19.619771] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.619787] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619794] [DEBUG]Wrote 16 bytes to file '/Users/guy/test.enc'
+[2026-01-18 13:27:19.619810] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.619974] [ENTRY]CloakableOutputFile::open()
+[2026-01-18 13:27:19.620091] [EXIT]CloakableOutputFile::open()
+[2026-01-18 13:27:19.620102] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 13:27:19.620108] [EXIT]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 13:27:19.620114] [ENTRY]CloakableInputFile::open()
+[2026-01-18 13:27:19.620148] [ENTRY]CloakableInputFile::calculateFileLength()
+[2026-01-18 13:27:19.620168] [DEBUG]Got file length as 85
+[2026-01-18 13:27:19.620176] [EXIT]CloakableInputFile::calculateFileLength()
+[2026-01-18 13:27:19.620180] [EXIT]CloakableInputFile::open()
+[2026-01-18 13:27:19.620185] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620190] [DEBUG]Read 21 bytes from '/Users/guy/test.enc'
+[2026-01-18 13:27:19.620195] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620200] [ENTRY]CloakableOutputFile::extractInitialisationBlockFromBuffer()
+[2026-01-18 13:27:19.620206] [DEBUG]Extracted length block: fileLength = 55, encryptedIncrease = 9
+[2026-01-18 13:27:19.620211] [ENTRY]AESDecryptableFile::extractAdditionalInitialisationBlock()
+[2026-01-18 13:27:19.620216] [EXIT]AESDecryptableFile::extractAdditionalInitialisationBlock()
+[2026-01-18 13:27:19.620221] [EXIT]CloakableOutputFile::extractInitialisationBlockFromBuffer()
+[2026-01-18 13:27:19.620235] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620240] [DEBUG]Read 16 bytes from '/Users/guy/test.enc'
+[2026-01-18 13:27:19.620246] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620250] [ENTRY]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.620273] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620288] [DEBUG]Wrote 16 bytes to file '/Users/guy/out.dat'
+[2026-01-18 13:27:19.620295] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620301] [EXIT]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.620305] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620310] [DEBUG]Read 16 bytes from '/Users/guy/test.enc'
+[2026-01-18 13:27:19.620315] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620320] [ENTRY]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.620339] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620346] [DEBUG]Wrote 16 bytes to file '/Users/guy/out.dat'
+[2026-01-18 13:27:19.620352] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620358] [EXIT]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.620363] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620368] [DEBUG]Read 16 bytes from '/Users/guy/test.enc'
+[2026-01-18 13:27:19.620373] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620377] [ENTRY]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.620392] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620399] [DEBUG]Wrote 16 bytes to file '/Users/guy/out.dat'
+[2026-01-18 13:27:19.620404] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620409] [EXIT]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.620414] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620419] [DEBUG]Read 16 bytes from '/Users/guy/test.enc'
+[2026-01-18 13:27:19.620425] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 13:27:19.620429] [ENTRY]DecryptableFile::writeBlock()
+[2026-01-18 13:27:19.620444] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620450] [DEBUG]Wrote 7 bytes to file '/Users/guy/out.dat'
+[2026-01-18 13:27:19.620455] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 13:27:19.620461] [EXIT]DecryptableFile::writeBlock()

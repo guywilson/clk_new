@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 
+#include "filefactory.h"
 #include "cloakable.h"
 #include "encryptable.h"
 #include "decryptable.h"
@@ -24,68 +25,58 @@ uint8_t testKey[64] = {
 };
 
 void addFileToImage(const string & dataFileName, const string & imageFileName, uint8_t * key, size_t keyLength) {
-    XOREncryptableFile file;
-    size_t initBufferSize = file.getInitialisationBlockBufferSize();
-    uint8_t * initBuffer = file.getInitialisationBlockBuffer();
+    auto file = EncryptableFileFactory::create(dataFileName, AlgorithmType::aes_encryption);
 
-    CloakableOutputFile of;
-    of.open("/Users/guy/test.xor");
+    auto of = CloakableFileFactory::createOutputFile("/Users/guy/test.enc");
 
-    file.open(dataFileName);
-    file.fillInitialisationBlockBuffer(initBuffer);
+    size_t initBufferSize = file->getInitialisationBlockBufferSize();
+    uint8_t * initBuffer = file->getInitialisationBlockBuffer();
+
+    file->fillInitialisationBlockBuffer(initBuffer);
 
     // Add initialisation block to image...
     // image.addBlock(initBuffer, initBufferSize);
 
-    of.writeBlock(initBuffer, initBufferSize);
+    of->writeBlock(initBuffer, initBufferSize);
 
-    file.setKey(key, keyLength);
+    file->setKey(key, keyLength);
 
-    size_t blockSize = file.getBlockSize();
-    uint8_t * buffer = file.getAllocatedBlock();
+    size_t blockSize = file->getBlockSize();
+    uint8_t * buffer = file->getAllocatedBlock();
 
-    while (file.hasMoreBlocks()) {
-        size_t bytesRead = file.readBlock(buffer);
+    while (file->hasMoreBlocks()) {
+        size_t bytesRead = file->readBlock(buffer);
         // image.addBlock(buffer, bytesRead);
 
-        of.writeBlock(buffer, blockSize);
-
-        usleep(5000U);
+        of->writeBlock(buffer, blockSize);
     }
-
-    of.close();
-    file.close();
 }
 
 void extractFileFromImage(const string & dataFileName, const string & imageFileName, uint8_t * key, size_t keyLength) {
-    XORDecryptableFile file;
-    size_t initBufferSize = file.getInitialisationBlockBufferSize();
-    uint8_t * initBuffer = file.getInitialisationBlockBuffer();
+    auto file = DecryptableFileFactory::create(dataFileName, AlgorithmType::aes_encryption);
 
-    CloakableInputFile inputFile;
-    inputFile.open("/Users/guy/test.xor");
-    inputFile.readBlock(initBuffer, initBufferSize);
-    inputFile.resetBlockCounter();
+    size_t initBufferSize = file->getInitialisationBlockBufferSize();
+    uint8_t * initBuffer = file->getInitialisationBlockBuffer();
+
+    auto inputFile = CloakableFileFactory::createInputFile("/Users/guy/test.enc");
+    inputFile->readBlock(initBuffer, initBufferSize);
+    inputFile->resetBlockCounter();
 
     //image.extractBlock(initBuffer, initBufferSize);
 
-    file.open(dataFileName);
+    LengthBlock initBlock = file->extractInitialisationBlockFromBuffer(initBuffer);
 
-    LengthBlock initBlock = file.extractInitialisationBlockFromBuffer(initBuffer);
+    file->setKey(key, keyLength);
 
-    file.setKey(key, keyLength);
+    uint8_t * buffer = file->getAllocatedBlock();
+    size_t blockSize = file->getBlockSize();
 
-    uint8_t * buffer = file.getAllocatedBlock();
-    size_t blockSize = file.getBlockSize();
-
-    while (file.getBytesLeftToWrite() > 0) {
-        inputFile.readBlock(buffer, blockSize);
+    while (file->getBytesLeftToWrite() > 0) {
+        inputFile->readBlock(buffer, blockSize);
 
         //image.extractBlock(buffer, blockSize);
-        file.writeBlock(buffer);
+        file->writeBlock(buffer);
     }
-
-    file.close();
 }
 
 int main(int argc, char ** argv) {
@@ -94,9 +85,8 @@ int main(int argc, char ** argv) {
     Logger & log = Logger::getInstance();
     log.init("clk.log", defaultLogLevel);
 
-    addFileToImage("/Users/guy/test.dat", "test.png", testKey, 64);
-
-    extractFileFromImage("/Users/guy/out.dat", "test.png", testKey, 64);
+    addFileToImage("/Users/guy/test.dat", "test.png", testKey, 16);
+    extractFileFromImage("/Users/guy/out.dat", "test.png", testKey, 16);
 
     log.close();
 
