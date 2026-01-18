@@ -28,10 +28,6 @@ class EncryptableFile : public CloakableInputFile {
             return algorithm->getBlockSize();
         }
 
-        size_t getInitialisationBlockBufferSize() override {
-            return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
-        }
-
         size_t readBlock(uint8_t * buffer) override {
             size_t blockSize = getBlockSize();
 
@@ -93,6 +89,10 @@ class AESEncryptableFile : public EncryptableFile {
     public:
         AESEncryptableFile() {
             algorithm = new AESEncryptionAlgorithm();
+        }
+
+        size_t getInitialisationBlockBufferSize() override {
+            return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
         }
 
         void fillInitialisationBlockBuffer(uint8_t * initialisationBlockBuffer) override  {

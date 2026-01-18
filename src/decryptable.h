@@ -28,10 +28,6 @@ class DecryptableFile : public CloakableOutputFile {
             return algorithm->getBlockSize();
         }
 
-        size_t getInitialisationBlockBufferSize() override {
-            return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
-        }
-
         inline size_t getBytesLeftToWrite() {
             return bytesLeftToWrite;
         }
@@ -103,6 +99,10 @@ class AESDecryptableFile : public DecryptableFile {
     public:
         AESDecryptableFile() {
             algorithm = new AESEncryptionAlgorithm();
+        }
+
+        size_t getInitialisationBlockBufferSize() override {
+            return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
         }
 
         LengthBlock extractInitialisationBlockFromBuffer(uint8_t * initialisationBlockBuffer) override {

@@ -165,6 +165,13 @@ class CloakableOutputFile : public CloakableFile {
             actualFileLength = block.originalFileLength;
             encryptedFileLength = block.originalFileLength + block.encryptedLengthIncrease;
 
+            /*
+            ** Set the file length so size() works, important so
+            ** that checking key length for XOR encrypted files
+            ** works.
+            */
+            fileLength = actualFileLength;
+
             bytesLeftToWrite = actualFileLength;
 
             extractAdditionalInitialisationBlock(initialisationBlockBuffer);

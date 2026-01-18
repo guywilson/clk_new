@@ -24,12 +24,12 @@ uint8_t testKey[64] = {
 };
 
 void addFileToImage(const string & dataFileName, const string & imageFileName, uint8_t * key, size_t keyLength) {
-    AESEncryptableFile file;
+    XOREncryptableFile file;
     size_t initBufferSize = file.getInitialisationBlockBufferSize();
     uint8_t * initBuffer = file.getInitialisationBlockBuffer();
 
     CloakableOutputFile of;
-    of.open("/Users/guy/development/clk/test.aes");
+    of.open("/Users/guy/test.xor");
 
     file.open(dataFileName);
     file.fillInitialisationBlockBuffer(initBuffer);
@@ -58,12 +58,12 @@ void addFileToImage(const string & dataFileName, const string & imageFileName, u
 }
 
 void extractFileFromImage(const string & dataFileName, const string & imageFileName, uint8_t * key, size_t keyLength) {
-    AESDecryptableFile file;
+    XORDecryptableFile file;
     size_t initBufferSize = file.getInitialisationBlockBufferSize();
     uint8_t * initBuffer = file.getInitialisationBlockBuffer();
 
     CloakableInputFile inputFile;
-    inputFile.open("/Users/guy/development/clk/test.aes");
+    inputFile.open("/Users/guy/test.xor");
     inputFile.readBlock(initBuffer, initBufferSize);
     inputFile.resetBlockCounter();
 
@@ -94,9 +94,9 @@ int main(int argc, char ** argv) {
     Logger & log = Logger::getInstance();
     log.init("clk.log", defaultLogLevel);
 
-    addFileToImage("/Users/guy/development/clk/test.dat", "test.png", testKey, 16);
+    addFileToImage("/Users/guy/test.dat", "test.png", testKey, 64);
 
-    extractFileFromImage("/Users/guy/development/clk/out.dat", "test.png", testKey, 16);
+    extractFileFromImage("/Users/guy/out.dat", "test.png", testKey, 64);
 
     log.close();
 

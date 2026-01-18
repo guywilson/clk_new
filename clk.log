@@ -1,0 +1,45 @@
+[2026-01-18 09:35:43.162699] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 09:35:43.162991] [EXIT]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 09:35:43.163002] [ENTRY]CloakableOutputFile::open()
+[2026-01-18 09:35:43.163106] [EXIT]CloakableOutputFile::open()
+[2026-01-18 09:35:43.163116] [ENTRY]CloakableInputFile::open()
+[2026-01-18 09:35:43.163165] [ENTRY]CloakableInputFile::calculateFileLength()
+[2026-01-18 09:35:43.163347] [DEBUG]Got file length as 55
+[2026-01-18 09:35:43.163365] [EXIT]CloakableInputFile::calculateFileLength()
+[2026-01-18 09:35:43.163372] [EXIT]CloakableInputFile::open()
+[2026-01-18 09:35:43.163378] [ENTRY]CloakableInputFile::fillInitialisationBlockBuffer()
+[2026-01-18 09:35:43.163401] [EXIT]CloakableInputFile::fillInitialisationBlockBuffer()
+[2026-01-18 09:35:43.163405] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 09:35:43.163410] [DEBUG]Wrote 5 bytes to file '/Users/guy/test.xor'
+[2026-01-18 09:35:43.163413] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 09:35:43.163416] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 09:35:43.163420] [DEBUG]Read 55 bytes from '/Users/guy/test.dat'
+[2026-01-18 09:35:43.163422] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 09:35:43.163441] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 09:35:43.163443] [DEBUG]Wrote 64 bytes to file '/Users/guy/test.xor'
+[2026-01-18 09:35:43.163448] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 09:35:43.169933] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 09:35:43.169961] [EXIT]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-18 09:35:43.169970] [ENTRY]CloakableInputFile::open()
+[2026-01-18 09:35:43.170037] [ENTRY]CloakableInputFile::calculateFileLength()
+[2026-01-18 09:35:43.170070] [DEBUG]Got file length as 69
+[2026-01-18 09:35:43.170083] [EXIT]CloakableInputFile::calculateFileLength()
+[2026-01-18 09:35:43.170089] [EXIT]CloakableInputFile::open()
+[2026-01-18 09:35:43.170099] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 09:35:43.170105] [DEBUG]Read 5 bytes from '/Users/guy/test.xor'
+[2026-01-18 09:35:43.170115] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 09:35:43.170120] [ENTRY]CloakableOutputFile::open()
+[2026-01-18 09:35:43.170213] [EXIT]CloakableOutputFile::open()
+[2026-01-18 09:35:43.170227] [ENTRY]CloakableOutputFile::extractInitialisationBlockFromBuffer()
+[2026-01-18 09:35:43.170238] [DEBUG]Extracted length block: fileLength = 55, encryptedIncrease = 0
+[2026-01-18 09:35:43.170247] [EXIT]CloakableOutputFile::extractInitialisationBlockFromBuffer()
+[2026-01-18 09:35:43.170254] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-18 09:35:43.170262] [DEBUG]Read 64 bytes from '/Users/guy/test.xor'
+[2026-01-18 09:35:43.170268] [EXIT]CloakableInputFile::readBlock()
+[2026-01-18 09:35:43.170314] [ENTRY]DecryptableFile::writeBlock()
+[2026-01-18 09:35:43.170358] [ENTRY]XORDecryptableFile::decryptBlock()
+[2026-01-18 09:35:43.170372] [EXIT]XORDecryptableFile::decryptBlock()
+[2026-01-18 09:35:43.170396] [ENTRY]CloakableOutputFile::writeBlock()
+[2026-01-18 09:35:43.170421] [DEBUG]Wrote 55 bytes to file '/Users/guy/out.dat'
+[2026-01-18 09:35:43.170434] [EXIT]CloakableOutputFile::writeBlock()
+[2026-01-18 09:35:43.170442] [EXIT]DecryptableFile::writeBlock()
