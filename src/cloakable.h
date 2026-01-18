@@ -140,8 +140,6 @@ class CloakableInputFile : public CloakableFile {
 
 class CloakableOutputFile : public CloakableFile {
     protected:
-        size_t actualFileLength;
-        size_t encryptedFileLength;
         size_t bytesLeftToWrite;
 
         virtual void extractAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) {}
@@ -162,17 +160,13 @@ class CloakableOutputFile : public CloakableFile {
                 (size_t)block.originalFileLength, 
                 (size_t)block.encryptedLengthIncrease);
 
-            actualFileLength = block.originalFileLength;
-            encryptedFileLength = block.originalFileLength + block.encryptedLengthIncrease;
-
             /*
             ** Set the file length so size() works, important so
             ** that checking key length for XOR encrypted files
             ** works.
             */
-            fileLength = actualFileLength;
-
-            bytesLeftToWrite = actualFileLength;
+            fileLength = block.originalFileLength;
+            bytesLeftToWrite = block.originalFileLength;
 
             extractAdditionalInitialisationBlock(initialisationBlockBuffer);
 
