@@ -1,8 +1,6 @@
 #include <iostream>
 #include <string>
 
-#include <pthread.h>
-
 #include "filefactory.h"
 #include "cloakable.h"
 #include "encryptable.h"

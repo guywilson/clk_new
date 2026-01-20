@@ -57,7 +57,7 @@ PANDOCFLAGS = -s -t man
 
 # Libraries
 STDLIBS=
-EXTLIBS=-lgcrypt -pthread
+EXTLIBS=-lgcrypt -lpng
 
 COMPILE.cpp=$(CPP) $(CPPFLAGS) -o $@
 COMPILE.c=$(C) $(CFLAGS) -o $@

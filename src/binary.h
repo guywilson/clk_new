@@ -18,9 +18,9 @@ class BinaryFile {
     public:
         virtual void open(const string & filename) = 0;
         virtual void close() {
-            if (fptr != NULL) {
+            if (fptr) {
                 fclose(fptr);
-                fptr = NULL;
+                fptr = nullptr;
             }
         }
 

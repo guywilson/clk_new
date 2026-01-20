@@ -2,3 +2,4 @@ clk
 /.vscode
 /build
 /dep
+.DS_Store
