@@ -5,6 +5,9 @@
 #include "cloakable.h"
 #include "encryptable.h"
 #include "decryptable.h"
+#include "pnghost.h"
+#include "pngrw.h"
+#include "cloak.h"
 #include "logger.h"
 #include "cmdarg.h"
 #include "version.h"
@@ -77,14 +80,29 @@ void extractFileFromImage(const string & dataFileName, const string & imageFileN
     }
 }
 
+void read_write_image(const string & inputFile, const string & outputFile) {
+    PNGReader reader;
+    PNGWriter writer;
+
+    reader.open(inputFile);
+
+    writer.assignImageDetails(reader.getPNGDetails());
+    writer.open(outputFile);
+
+    writer.close();
+    reader.close();
+}
+
 int main(int argc, char ** argv) {
     int defaultLogLevel = LOG_LEVEL_ALL;
 
     Logger & log = Logger::getInstance();
     log.init("clk.log", defaultLogLevel);
 
-    addFileToImage("/Users/guy/test.dat", "test.png", testKey, 16);
-    extractFileFromImage("/Users/guy/out.dat", "test.png", testKey, 16);
+    // addFileToImage("/Users/guy/test.dat", "test.png", testKey, 16);
+    // extractFileFromImage("/Users/guy/out.dat", "test.png", testKey, 16);
+
+    read_write_image("/Users/guy/flowers.png", "/Users/guy/out.png");
 
     log.close();
 

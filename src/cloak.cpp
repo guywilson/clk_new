@@ -2,30 +2,6 @@
 #include "logger.h"
 #include "clk_error.h"
 
-static uint8_t getBitMask(CloakSecurity & security) {
-	uint8_t mask = 0x00;
-
-	switch (security) {
-		case CloakSecurity::security_high:
-			mask = 0x01;
-			break;
-
-		case CloakSecurity::security_medium:
-			mask = 0x03;
-			break;
-
-		case CloakSecurity::security_low:
-			mask = 0x0F;
-			break;
-
-		case CloakSecurity::security_none:
-			mask = 0xFF;
-			break;
-	}
-
-	return mask;
-}
-
 void CloakAlgorithm::mergeByte(uint8_t * imageData, size_t imageDataLen, uint8_t dataByte, CloakSecurity & security) {
 	uint8_t	secretBits;
 	int	bitCounter = 0;

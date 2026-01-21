@@ -1,0 +1,7 @@
+[2026-01-21 09:33:15.347417] [ENTRY]HostFileReader::open()
+[2026-01-21 09:33:15.348276] [ENTRY]HostFileReader::calculateFileLength()
+[2026-01-21 09:33:15.348479] [DEBUG]Got file length as 846332
+[2026-01-21 09:33:15.348489] [EXIT]HostFileReader::calculateFileLength()
+[2026-01-21 09:33:15.353189] [EXIT]HostFileReader::open()
+[2026-01-21 09:33:15.353274] [ENTRY]HostFileWriter::open()
+[2026-01-21 09:33:15.353358] [EXIT]HostFileWriter::open()
