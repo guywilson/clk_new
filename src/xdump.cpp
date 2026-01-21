@@ -8,8 +8,8 @@
 #include "xdump.h"
 
 void hexDump(void * buffer, uint32_t bufferLen) {
-    static char szASCIIBuf[17];
-    static uint32_t offset = 0;
+    char szASCIIBuf[17];
+    uint32_t offset = 0;
 
     uint8_t * buf = (uint8_t *)buffer;
 

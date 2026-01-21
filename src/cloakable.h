@@ -134,9 +134,9 @@ class CloakableInputFile : public CloakableFile {
 
             addAdditionalInitialisationBlock(initialisationBlockBuffer);
 
-            if (log.isLogLevel(LOG_LEVEL_INFO)) {
-                hexDump(initialisationBlockBuffer, getInitialisationBlockBufferSize());
-            }
+            // if (log.isLogLevel(LOG_LEVEL_INFO)) {
+            //     hexDump(initialisationBlockBuffer, getInitialisationBlockBufferSize());
+            // }
 
             log.exit("CloakableInputFile::fillInitialisationBlockBuffer()");
         }

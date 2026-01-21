@@ -9,25 +9,33 @@
 #include "pngrw.h"
 #include "pnghost.h"
 #include "cloak.h"
+#include "xdump.h"
 
 using namespace std;
 
-void PNGHost::addBlock(uint8_t * sourceBlock, size_t sourceBlockSize) {
+void PNGHost::addBlock(HostFileReader * reader, uint8_t * sourceBlock, size_t sourceBlockSize) {
     size_t numImageBytesRequired = CloakAlgorithm::calculateBlockHostBytesRequired(sourceBlockSize, security);
 
     PNGReader * pngReader = (PNGReader *)reader;
-
     uint8_t * imageBuffer = pngReader->getBlockPointer(numImageBytesRequired);
 
-    CloakAlgorithm::mergeBlock(imageBuffer, numImageBytesRequired, sourceBlock, sourceBlockSize, security);
+    hexDump(sourceBlock, sourceBlockSize);
+    hexDump(imageBuffer, numImageBytesRequired);
+
+    CloakAlgorithm::mergeBlock(imageBuffer, sourceBlock, sourceBlockSize, security);
+
+    hexDump(imageBuffer, numImageBytesRequired);
 }
 
-void PNGHost::extractBlock(uint8_t * targetBlock, size_t targetBlockSize) {
+void PNGHost::extractBlock(HostFileReader * reader, uint8_t * targetBlock, size_t targetBlockSize) {
     size_t numImageBytesRequired = CloakAlgorithm::calculateBlockHostBytesRequired(targetBlockSize, security);
 
     PNGReader * pngReader = (PNGReader *)reader;
-
     uint8_t * imageBuffer = pngReader->getBlockPointer(numImageBytesRequired);
 
-    CloakAlgorithm::extractBlock(imageBuffer, numImageBytesRequired, targetBlock, targetBlockSize, security);
+    hexDump(imageBuffer, numImageBytesRequired);
+
+    CloakAlgorithm::extractBlock(imageBuffer, targetBlock, targetBlockSize, security);
+
+    hexDump(targetBlock, targetBlockSize);
 }

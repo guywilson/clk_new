@@ -53,13 +53,13 @@ class DecryptableFile : public CloakableOutputFile {
 
             size_t blockSize = getBlockSize();
 
-            cout << "Extracted block:" << endl;
-            hexDump(buffer, blockSize);
+            // cout << "Extracted block:" << endl;
+            // hexDump(buffer, blockSize);
 
             decryptBlock(buffer, blockSize);
 
-            cout << "Decrypted block:" << endl;
-            hexDump(buffer, blockSize);
+            // cout << "Decrypted block:" << endl;
+            // hexDump(buffer, blockSize);
 
             size_t bytesWritten = CloakableOutputFile::writeBlock(buffer, bytesToWrite);
             

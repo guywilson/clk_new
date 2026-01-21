@@ -48,6 +48,15 @@ class PNGReader : public HostFileReader {
         void onClose() override;
 
     public:
+        void * getData() override {
+            return imageDetails.imgBuffer;
+        }
+
+        void reset() {
+            readPointer = 0;
+            rowCounter = 0;
+        }
+        
         uint8_t * getBlockPointer(size_t blockLength);
         void readBlock(uint8_t * buffer, size_t bufferLength) override;
 

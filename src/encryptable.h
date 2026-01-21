@@ -47,13 +47,13 @@ class EncryptableFile : public CloakableInputFile {
 
             size_t bytesRead = CloakableInputFile::readBlock(buffer);
 
-            cout << "Read block:" << endl;
-            hexDump(buffer, bytesRead);
+            // cout << "Read block:" << endl;
+            // hexDump(buffer, bytesRead);
 
             encryptBlock(buffer, blockSize);
 
-            cout << "Encrypted block:" << endl;
-            hexDump(buffer, blockSize);
+            // cout << "Encrypted block:" << endl;
+            // hexDump(buffer, blockSize);
 
             return bytesRead;
         }

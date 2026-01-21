@@ -1,4 +1,5 @@
 #include <string>
+#include <memory>
 
 #include "logger.h"
 #include "binary.h"
@@ -31,6 +32,7 @@ class HostFileReader : public BinaryFile {
         }
 
         virtual void readBlock(uint8_t * buffer, size_t bufferLength) = 0;
+        virtual void * getData() = 0;
 };
 
 class HostFileWriter : public BinaryFile {
@@ -60,26 +62,18 @@ class HostFile {
 
         CloakSecurity security;
 
-        HostFileReader * reader;
-        HostFileWriter * writer;
-
     public:
-        void setCloakSecurityLevel(CloakSecurity & securityLevel) {
+        void setCloakSecurityLevel(const CloakSecurity & securityLevel) {
             security = securityLevel;
         }
 
-        virtual void readBlock(uint8_t * buffer, size_t bufferLength) {
-            reader->readBlock(buffer, bufferLength);
-        }
-
-        virtual void writeBlock(uint8_t * buffer, size_t bufferLength) {
-            writer->writeBlock(buffer, bufferLength);
-        }
-
         virtual void addBlock(
+                        HostFileReader * reader,
                         uint8_t * sourceBlock, 
                         size_t sourceBlockSize) = 0;
+
         virtual void extractBlock(
+                        HostFileReader * reader,
                         uint8_t * targetBlock, 
                         size_t targetBlockSize) = 0;
 };

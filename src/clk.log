@@ -1,7 +1,38 @@
-[2026-01-21 09:33:15.347417] [ENTRY]HostFileReader::open()
-[2026-01-21 09:33:15.348276] [ENTRY]HostFileReader::calculateFileLength()
-[2026-01-21 09:33:15.348479] [DEBUG]Got file length as 846332
-[2026-01-21 09:33:15.348489] [EXIT]HostFileReader::calculateFileLength()
-[2026-01-21 09:33:15.353189] [EXIT]HostFileReader::open()
-[2026-01-21 09:33:15.353274] [ENTRY]HostFileWriter::open()
-[2026-01-21 09:33:15.353358] [EXIT]HostFileWriter::open()
+[2026-01-21 18:08:29.168688] [ENTRY]CloakableInputFile::open()
+[2026-01-21 18:08:29.168743] [ENTRY]CloakableInputFile::calculateFileLength()
+[2026-01-21 18:08:29.168891] [DEBUG]Got file length as 55
+[2026-01-21 18:08:29.168898] [EXIT]CloakableInputFile::calculateFileLength()
+[2026-01-21 18:08:29.168901] [EXIT]CloakableInputFile::open()
+[2026-01-21 18:08:29.168904] [ENTRY]HostFileReader::open()
+[2026-01-21 18:08:29.168933] [ENTRY]HostFileReader::calculateFileLength()
+[2026-01-21 18:08:29.169099] [DEBUG]Got file length as 869345
+[2026-01-21 18:08:29.169104] [EXIT]HostFileReader::calculateFileLength()
+[2026-01-21 18:08:29.180117] [EXIT]HostFileReader::open()
+[2026-01-21 18:08:29.180124] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-21 18:08:29.180127] [EXIT]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-21 18:08:29.180130] [ENTRY]AESEncryptableFile::fillInitialisationBlockBuffer()
+[2026-01-21 18:08:29.180132] [DEBUG]Length block: originalSize = 55, encryptedDiff = 9
+[2026-01-21 18:08:29.180136] [EXIT]AESEncryptableFile::fillInitialisationBlockBuffer()
+[2026-01-21 18:09:04.853307] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.853525] [DEBUG]Read 16 bytes from '/Users/guy/test.dat'
+[2026-01-21 18:09:04.853593] [EXIT]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.855391] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.855565] [DEBUG]Read 16 bytes from '/Users/guy/test.dat'
+[2026-01-21 18:09:04.855618] [EXIT]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.855715] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.855760] [DEBUG]Read 16 bytes from '/Users/guy/test.dat'
+[2026-01-21 18:09:04.855797] [EXIT]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.855886] [ENTRY]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.855937] [DEBUG]Read 7 bytes from '/Users/guy/test.dat'
+[2026-01-21 18:09:04.855978] [EXIT]CloakableInputFile::readBlock()
+[2026-01-21 18:09:04.856963] [ENTRY]HostFileWriter::open()
+[2026-01-21 18:09:04.857514] [EXIT]HostFileWriter::open()
+[2026-01-21 18:09:04.900600] [ENTRY]CloakableOutputFile::open()
+[2026-01-21 18:09:04.900688] [EXIT]CloakableOutputFile::open()
+[2026-01-21 18:09:04.900697] [ENTRY]HostFileReader::open()
+[2026-01-21 18:09:04.900725] [ENTRY]HostFileReader::calculateFileLength()
+[2026-01-21 18:09:04.900741] [DEBUG]Got file length as 869347
+[2026-01-21 18:09:04.900747] [EXIT]HostFileReader::calculateFileLength()
+[2026-01-21 18:09:04.906314] [EXIT]HostFileReader::open()
+[2026-01-21 18:09:04.906322] [ENTRY]CloakableFile::getInitialisationBlockBuffer()
+[2026-01-21 18:09:04.906327] [EXIT]CloakableFile::getInitialisationBlockBuffer()

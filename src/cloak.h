@@ -13,7 +13,7 @@ enum class CloakSecurity {
     security_none = 8
 };
 
-inline uint8_t getBitMask(CloakSecurity & security) {
+inline uint8_t getBitMask(const CloakSecurity & security) {
 	static uint8_t mask[9] = {0x00, 0x01, 0x03, 0x00, 0x0F, 0x00, 0x00, 0x00, 0xFF};
 	return mask[(int)security];
 
@@ -45,27 +45,28 @@ inline uint8_t getBitMask(CloakSecurity & security) {
 
 class CloakAlgorithm {
     private:
-        static void mergeByte(uint8_t * imageData, size_t imageDataLen, uint8_t dataByte, CloakSecurity & security);
-        static uint8_t extractByte(uint8_t * imageData, size_t imageDataLen, CloakSecurity & security);
+        // static void mergeByte(uint8_t * imageData, size_t imageDataLen, uint8_t dataByte, CloakSecurity & security);
+        // static uint8_t extractByte(uint8_t * imageData, size_t imageDataLen, CloakSecurity & security);
 
     public:
-        static size_t calculateBlockHostBytesRequired(size_t blockSize, CloakSecurity & security) {
+        static size_t calculateBlockHostBytesRequired(size_t blockSize, const CloakSecurity & security) {
             return ((blockSize * (size_t)8) / (size_t)security);
         }
 
+        static void mergeByte(uint8_t * imageData, size_t imageDataLen, uint8_t dataByte, const CloakSecurity & security);
+        static uint8_t extractByte(uint8_t * imageData, size_t imageDataLen, const CloakSecurity & security);
+
         static void mergeBlock(
                         uint8_t * imageData, 
-                        size_t imageDataLen, 
                         uint8_t * dataBlock, 
                         size_t blockLength, 
-                        CloakSecurity & security);
+                        const CloakSecurity & security);
 
         static void extractBlock(
                         uint8_t * imageData, 
-                        size_t imageDataLen, 
                         uint8_t * dataBlock, 
                         size_t blockLength, 
-                        CloakSecurity & security);
+                        const CloakSecurity & security);
 };
 
 #endif
