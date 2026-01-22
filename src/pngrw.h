@@ -57,6 +57,10 @@ class PNGReader : public HostFileReader {
             rowCounter = 0;
         }
         
+        size_t getCapacity(size_t headerSize, const CloakSecurity & securityLevel) override {
+            return (imageDetails.imgBufferLength - headerSize) / ((size_t)8 / (size_t)securityLevel);
+        }
+
         uint8_t * getBlockPointer(size_t blockLength);
         void readBlock(uint8_t * buffer, size_t bufferLength) override;
 

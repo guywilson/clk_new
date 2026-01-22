@@ -25,6 +25,8 @@ class HostFileReader : public BinaryFile {
             close();
         }
 
+        virtual size_t getCapacity(size_t headerSize, const CloakSecurity & securityLevel) = 0;
+
         virtual void open(const string & filename) override;
         virtual void close() override {
             onClose();

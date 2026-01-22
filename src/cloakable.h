@@ -10,6 +10,8 @@
 #include "xdump.h"
 #include "clk_error.h"
 
+#include "random_block.h"
+
 using namespace std;
 
 #ifndef __INCL_CLOAKABLE_FILE
@@ -155,6 +157,11 @@ class CloakableInputFile : public CloakableFile {
 
             addAdditionalInitialisationBlock(initialisationBlockBuffer);
 
+            size_t bufferLength = getInitialisationBlockBufferSize();
+
+            XOREncryptionAlgorithm algo;
+            algo.encryptBlock(initialisationBlockBuffer, bufferLength, &random_block[256], bufferLength);
+
             log.exit("CloakableInputFile::fillInitialisationBlockBuffer()");
         }
 };
@@ -184,6 +191,11 @@ class CloakableOutputFile : public CloakableFile {
 
         virtual LengthBlock extractInitialisationBlockFromBuffer(uint8_t * initialisationBlockBuffer) {
             log.entry("CloakableOutputFile::extractInitialisationBlockFromBuffer()");
+
+            size_t bufferLength = getInitialisationBlockBufferSize();
+
+            XOREncryptionAlgorithm algo;
+            algo.decryptBlock(initialisationBlockBuffer, bufferLength, &random_block[256], bufferLength);
 
             LengthBlock block;
             memcpy(&block, initialisationBlockBuffer, CLOAKED_LENGTH_BLOCK_SIZE);

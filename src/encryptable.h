@@ -9,6 +9,8 @@
 #include "xdump.h"
 #include "clk_error.h"
 
+#include "random_block.h"
+
 using namespace std;
 
 #ifndef __INCL_ENCRYPTABLE
@@ -113,6 +115,11 @@ class AESEncryptableFile : public EncryptableFile {
 
             memcpy(initialisationBlockBuffer, &block, CLOAKED_LENGTH_BLOCK_SIZE);
             addAdditionalInitialisationBlock(initialisationBlockBuffer);
+
+            size_t bufferLength = getInitialisationBlockBufferSize();
+
+            XOREncryptionAlgorithm algo;
+            algo.encryptBlock(initialisationBlockBuffer, bufferLength, &random_block[64], bufferLength);
 
             log.exit("AESEncryptableFile::fillInitialisationBlockBuffer()");
         }

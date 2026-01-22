@@ -98,12 +98,6 @@ class AESDecryptableFile : public DecryptableFile {
         size_t getInitialisationBlockBufferSize() override {
             return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
         }
-
-        LengthBlock extractInitialisationBlockFromBuffer(uint8_t * initialisationBlockBuffer) override {
-            LengthBlock block = CloakableOutputFile::extractInitialisationBlockFromBuffer(initialisationBlockBuffer);
-
-            return block;
-        }
 };
 
 class XORDecryptableFile : public DecryptableFile {

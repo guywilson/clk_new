@@ -227,88 +227,111 @@ int main(int argc, char ** argv) {
     string dataFilename = "/Users/guy/BAU-E2E.pptx";
 #endif
 
-    AlgorithmType algorithm = getAlgorithmArg(algo);
+    try {
+        AlgorithmType algorithm = getAlgorithmArg(algo);
 
-    if (algorithm == AlgorithmType::aes_encryption) {
-        pair<uint8_t *, size_t> keyPair = getKeyFromUser();
+        if (algorithm == AlgorithmType::aes_encryption) {
+            pair<uint8_t *, size_t> keyPair = getKeyFromUser();
 
-        key = keyPair.first;
-        keyLength = keyPair.second;
-    }
-    else if (algorithm == AlgorithmType::xor_encryption) {
-        pair<uint8_t *, size_t> keyPair = getKeyFromFile(keyFilename);
+            key = keyPair.first;
+            keyLength = keyPair.second;
+        }
+        else if (algorithm == AlgorithmType::xor_encryption) {
+            pair<uint8_t *, size_t> keyPair = getKeyFromFile(keyFilename);
 
-        key = keyPair.first;
-        keyLength = keyPair.second;
-    }
-
-    PNGReader * reader = new PNGReader();
-    reader->open(imageFilename);
-
-    PNGHost host;
-    host.setCloakSecurityLevel(getSecurityLevelArg(securityLevel));
-
-    if (operation == OPERATION_MERGE) {
-        auto file = CloakableFileFactory::createInputFile(dataFilename, algorithm);
-
-        size_t initBufferSize = file->getInitialisationBlockBufferSize();
-        uint8_t * initBuffer = file->getInitialisationBlockBuffer();
-
-        file->fillInitialisationBlockBuffer(initBuffer);
-
-        // Add initialisation block to image...
-        host.addBlock(reader, initBuffer, initBufferSize);
-
-        if (algorithm != AlgorithmType::no_encryption) {
-            file->setKey(key, keyLength);
+            key = keyPair.first;
+            keyLength = keyPair.second;
         }
 
-        size_t blockSize = file->getBlockSize();
-        uint8_t * buffer = file->getAllocatedBlock();
+        PNGReader * reader = new PNGReader();
+        reader->open(imageFilename);
 
-        while (file->hasMoreBlocks()) {
-            file->readBlock(buffer);
-            host.addBlock(reader, buffer, blockSize);
+        PNGHost host;
+        host.setCloakSecurityLevel(getSecurityLevelArg(securityLevel));
+
+        if (operation == OPERATION_MERGE) {
+            auto file = CloakableFileFactory::createInputFile(dataFilename, algorithm);
+
+            size_t initBufferSize = file->getInitialisationBlockBufferSize();
+            uint8_t * initBuffer = file->getInitialisationBlockBuffer();
+
+            file->fillInitialisationBlockBuffer(initBuffer);
+
+            size_t imageCapacity = reader->getCapacity(initBufferSize, getSecurityLevelArg(securityLevel));
+
+            if (file->size() > imageCapacity) {
+                delete reader;
+                file->close();
+
+                throw clk_error(
+                    clk_error::buildMsg(
+                        "The selected file '%s' (%zu bytes) is too large for the selected image '%s' (capacity %zu bytes)",
+                        dataFilename.c_str(),
+                        file->size(),
+                        imageFilename.c_str(),
+                        imageCapacity), 
+                    __FILE__, __LINE__);
+            }
+
+            // Add initialisation block to image...
+            host.addBlock(reader, initBuffer, initBufferSize);
+
+            if (algorithm != AlgorithmType::no_encryption) {
+                file->setKey(key, keyLength);
+            }
+
+            size_t blockSize = file->getBlockSize();
+            uint8_t * buffer = file->getAllocatedBlock();
+
+            while (file->hasMoreBlocks()) {
+                file->readBlock(buffer);
+                host.addBlock(reader, buffer, blockSize);
+            }
+
+            file->close();
+
+            PNGWriter writer;
+            writer.assignImageDetails(reader->getPNGDetails());
+
+            reader->close();
+
+            writer.open(imageFilename);
+            writer.close();
         }
+        else if (operation == OPERATION_EXTRACT) {
+            auto file = CloakableFileFactory::createOutputFile(dataFilename, algorithm);
 
-        PNGWriter writer;
-        writer.assignImageDetails(reader->getPNGDetails());
+            size_t initBufferSize = file->getInitialisationBlockBufferSize();
+            uint8_t * initBuffer = file->getInitialisationBlockBuffer();
 
-        reader->close();
+            host.extractBlock(reader, initBuffer, initBufferSize);
 
-        writer.open(imageFilename);
-        writer.close();
+            file->extractInitialisationBlockFromBuffer(initBuffer);
+
+            if (algorithm != AlgorithmType::no_encryption) {
+                file->setKey(key, keyLength);
+            }
+
+            uint8_t * buffer = file->getAllocatedBlock();
+            size_t blockSize = file->getBlockSize();
+
+            while (file->getBytesLeftToWrite() > 0) {
+                host.extractBlock(reader, buffer, blockSize);
+                file->writeBlock(buffer);
+            }
+
+            file->close();
+            reader->close();
+        }
+        else {
+            delete reader;
+            throw clk_error("Invalid operation supplied");
+        }
 
         delete reader;
     }
-    else if (operation == OPERATION_EXTRACT) {
-        auto file = CloakableFileFactory::createOutputFile(dataFilename, algorithm);
-
-        size_t initBufferSize = file->getInitialisationBlockBufferSize();
-        uint8_t * initBuffer = file->getInitialisationBlockBuffer();
-
-        host.extractBlock(reader, initBuffer, initBufferSize);
-
-        file->extractInitialisationBlockFromBuffer(initBuffer);
-
-        if (algorithm != AlgorithmType::no_encryption) {
-            file->setKey(key, keyLength);
-        }
-
-        uint8_t * buffer = file->getAllocatedBlock();
-        size_t blockSize = file->getBlockSize();
-
-        while (file->getBytesLeftToWrite() > 0) {
-            host.extractBlock(reader, buffer, blockSize);
-            file->writeBlock(buffer);
-        }
-
-        delete reader;
-
-        file->close();
-    }
-    else {
-        throw clk_error("Invalid operation supplied");
+    catch (clk_error & e) {
+        cout << "ERROR: caught exception: " << e.what() << endl << endl;
     }
 
     log.close();

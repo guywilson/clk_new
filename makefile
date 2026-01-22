@@ -7,8 +7,8 @@
 ###############################################################################
 
 # Version number for clk
-MAJOR_VERSION = 0
-MINOR_VERSION = 1
+MAJOR_VERSION = 1
+MINOR_VERSION = 0
 
 # Directories
 SOURCE = src
