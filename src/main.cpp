@@ -114,6 +114,7 @@ pair<uint8_t *, size_t> getKeyFromUser() {
                 __LINE__);
     }
 
+#ifndef RUN_IN_DEBUGGER
     string password;
 	int i = 0;
 
@@ -134,6 +135,9 @@ pair<uint8_t *, size_t> getKeyFromUser() {
 
     putchar('\n');
     fflush(stdout);
+#else
+    string password = "password";
+#endif
 
 	gcry_md_hash_buffer(GCRY_MD_SHA3_256, keyBuffer, password.c_str(), password.length());
     password.clear();
@@ -186,6 +190,7 @@ int main(int argc, char ** argv) {
 
     CmdArg cmdArg = CmdArg(argc, argv);
 
+#ifndef RUN_IN_DEBUGGER
     for (int i = 0;i < cmdArg.getNumArgs() - 1;i++) {
         string arg = cmdArg.getArg(i);
 
@@ -214,6 +219,13 @@ int main(int argc, char ** argv) {
     }
 
     string dataFilename = cmdArg.getArg(cmdArg.getNumArgs() - 1);
+#else
+    operation = "merge";
+    algo = "aes256";
+    securityLevel = "high";
+    imageFilename = "/Users/guy/flowers.png";
+    string dataFilename = "/Users/guy/BAU-E2E.pptx";
+#endif
 
     AlgorithmType algorithm = getAlgorithmArg(algo);
 
