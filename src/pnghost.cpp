@@ -19,12 +19,7 @@ void PNGHost::addBlock(HostFileReader * reader, uint8_t * sourceBlock, size_t so
     PNGReader * pngReader = (PNGReader *)reader;
     uint8_t * imageBuffer = pngReader->getBlockPointer(numImageBytesRequired);
 
-    hexDump(sourceBlock, sourceBlockSize);
-    hexDump(imageBuffer, numImageBytesRequired);
-
     CloakAlgorithm::mergeBlock(imageBuffer, sourceBlock, sourceBlockSize, security);
-
-    hexDump(imageBuffer, numImageBytesRequired);
 }
 
 void PNGHost::extractBlock(HostFileReader * reader, uint8_t * targetBlock, size_t targetBlockSize) {
@@ -33,9 +28,5 @@ void PNGHost::extractBlock(HostFileReader * reader, uint8_t * targetBlock, size_
     PNGReader * pngReader = (PNGReader *)reader;
     uint8_t * imageBuffer = pngReader->getBlockPointer(numImageBytesRequired);
 
-    hexDump(imageBuffer, numImageBytesRequired);
-
     CloakAlgorithm::extractBlock(imageBuffer, targetBlock, targetBlockSize, security);
-
-    hexDump(targetBlock, targetBlockSize);
 }
