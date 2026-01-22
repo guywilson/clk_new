@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#include "clk_error.h"
+
 using namespace std;
 
 #ifndef __INCL_CMDARG
@@ -14,14 +16,45 @@ class CmdArg {
         vector<string> args;
 
     public:
-        CmdArg(int argc, char ** argv);
-        ~CmdArg();
+        CmdArg(int argc, char ** argv) {
+            for (int i = 1;i < argc;i++) {
+                args.push_back(argv[i]);
+            }
 
-        int getNumArgs();
-        bool hasMoreArgs();
-        string nextArg();
+            argPointer = 0;
+        }
 
-        string getArg(int i);
+        ~CmdArg() {
+            args.clear();
+        }
+
+        inline int getNumArgs() {
+            return args.size();
+        }
+
+        inline bool hasMoreArgs() {
+            return (argPointer < getNumArgs());
+        }
+
+        inline bool isLastArg() {
+            return (argPointer >= (getNumArgs() - 1));
+        }
+
+        inline string nextArg() {
+            if (argPointer >= getNumArgs()) {
+                throw clk_error("Command index overrun");
+            }
+
+            return args[argPointer++];
+        }
+
+        inline string getArg(int i) {
+            if (i >= getNumArgs()) {
+                throw clk_error("Command index overrun");
+            }
+
+            return args[i];
+        }
 };
  
 #endif

@@ -181,51 +181,51 @@ int main(int argc, char ** argv) {
     string securityLevel;
     string operation;
     string imageFilename;
+    string dataFilename;
     string keyFilename;
     uint8_t * key;
     size_t keyLength;
 
-    Logger & log = Logger::getInstance();
-    log.init("clk.log", defaultLogLevel);
-
     CmdArg cmdArg = CmdArg(argc, argv);
 
 #ifndef RUN_IN_DEBUGGER
-    for (int i = 0;i < cmdArg.getNumArgs() - 1;i++) {
-        string arg = cmdArg.getArg(i);
+    while (cmdArg.hasMoreArgs()) {
+        string arg = cmdArg.nextArg();
 
         if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
             operation = arg;
         }
         else if (arg == "-algo") {
-            algo = cmdArg.getArg(i + 1);
-            i++;
+            algo = cmdArg.nextArg();
         }
         else if (arg =="-security-level" || arg == "-sl") {
-            securityLevel = cmdArg.getArg(i + 1);
-            i++;
+            securityLevel = cmdArg.nextArg();
         }
         else if (arg == "-i" || arg == "-image") {
-            imageFilename = cmdArg.getArg(i + 1);
-            i++;
+            imageFilename = cmdArg.nextArg();
         }
         else if (arg == "-key" || arg == "-k") {
-            keyFilename = cmdArg.getArg(i + 1);
-            i++;
+            keyFilename = cmdArg.nextArg();
         }
-        else {
-            throw clk_error(clk_error::buildMsg("Invalid argument supplied, do not understand '%s'", arg.c_str()));
+        else if (arg == "-v" || arg == "-version") {
+            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
+            return 0;
+        }
+        else if (cmdArg.isLastArg()) {
+            dataFilename = arg;
         }
     }
 
-    string dataFilename = cmdArg.getArg(cmdArg.getNumArgs() - 1);
 #else
     operation = "merge";
     algo = "aes256";
     securityLevel = "high";
     imageFilename = "/Users/guy/flowers.png";
-    string dataFilename = "/Users/guy/BAU-E2E.pptx";
+    dataFilename = "/Users/guy/BAU-E2E.pptx";
 #endif
+
+    Logger & log = Logger::getInstance();
+    log.init("clk.log", defaultLogLevel);
 
     try {
         AlgorithmType algorithm = getAlgorithmArg(algo);
