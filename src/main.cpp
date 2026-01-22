@@ -2,6 +2,12 @@
 #include <string>
 #include <stdio.h>
 
+#ifdef _WIN32
+#include <conio.h>
+#else
+#include <termios.h>
+#endif
+
 #include "filefactory.h"
 #include "cloakable.h"
 #include "encryptable.h"
@@ -14,138 +20,284 @@
 #include "version.h"
 #include "xdump.h"
 
+#define OPERATION_MERGE                 "merge"
+#define OPERATION_EXTRACT               "extract"
+#define MAX_PASSWORD_LENGTH             256
+
 using namespace std;
 
-uint8_t testKey[64] = {
-    0xCC, 0x86, 0xB1, 0xC1, 0xEE, 0x9D, 0x66, 0xB8, 
-	0x82, 0xF3, 0x49, 0xCF, 0x4E, 0x70, 0x43, 0xEA, 
-    0xF2, 0xDA, 0xDF, 0xA5, 0x61, 0x44, 0x7D, 0x23, 
-	0x76, 0xA0, 0x8C, 0xA3, 0x80, 0x21, 0x4F, 0xD6, 
-    0x55, 0xF5, 0x40, 0x0E, 0x5D, 0x3F, 0xC5, 0x0C, 
-	0xC5, 0x7B, 0x7F, 0xA0, 0x41, 0x0B, 0x2C, 0x33, 
-    0x55, 0x47, 0xD0, 0x04, 0x72, 0x08, 0xF4, 0xCC,
-	0xFA, 0xEB, 0xE2, 0x86, 0xBD, 0xB1, 0xB2, 0x2B 
-};
+int __getch(void) {
+	int		ch;
 
-void addFileToImage(const string & dataFileName, const string & imageFileName, uint8_t * key, size_t keyLength) {
-    auto file = EncryptableFileFactory::create(dataFileName, AlgorithmType::aes_encryption);
+#ifndef _WIN32
+	struct termios current;
+	struct termios original;
 
-    PNGReader * reader = new PNGReader();
-    reader->open(imageFileName);
+	tcgetattr(fileno(stdin), &original); /* grab old terminal i/o settings */
+	current = original; /* make new settings same as old settings */
+	current.c_lflag &= ~ICANON; /* disable buffered i/o */
+	current.c_lflag &= ~ECHO; /* set echo mode */
+	tcsetattr(fileno(stdin), TCSANOW, &current); /* use these new terminal i/o settings now */
+#endif
 
-    size_t initBufferSize = file->getInitialisationBlockBufferSize();
-    uint8_t * initBuffer = file->getInitialisationBlockBuffer();
+#ifdef _WIN32
+    ch = _getch();
+#else
+    ch = getchar();
+#endif
 
-    file->fillInitialisationBlockBuffer(initBuffer);
+#ifndef _WIN32
+	tcsetattr(0, TCSANOW, &original);
+#endif
 
-    PNGHost host;
+    return ch;
+}
 
-    // Add initialisation block to image...
-    host.setCloakSecurityLevel(CloakSecurity::security_high);
-    host.addBlock(reader, initBuffer, initBufferSize);
+CloakSecurity getSecurityLevelArg(const string & arg) {
+    CloakSecurity security;
 
-    file->setKey(key, keyLength);
-
-    size_t blockSize = file->getBlockSize();
-    uint8_t * buffer = file->getAllocatedBlock();
-
-    while (file->hasMoreBlocks()) {
-        size_t bytesRead = file->readBlock(buffer);
-        host.addBlock(reader, buffer, blockSize);
+    if (arg == "high" || arg == "hi") {
+        security = CloakSecurity::security_high;
+    }
+    else if (arg == "medium" || arg == "med") {
+        security = CloakSecurity::security_medium;
+    }
+    else if (arg == "low" || arg == "lo") {
+        security = CloakSecurity::security_low;
+    }
+    else if (arg == "none" || arg == "no") {
+        security = CloakSecurity::security_none;
+    }
+    else if (arg.length() == 0) {
+        security = CloakSecurity::security_high;
+    }
+    else {
+        throw clk_error(clk_error::buildMsg("Invalid security level supplied, do not understand '%s'", arg.c_str()));
     }
 
-    PNGWriter writer;
-    writer.assignImageDetails(reader->getPNGDetails());
-
-    reader->close();
-
-    writer.open(imageFileName);
-    writer.close();
-
-    delete reader;
+    return security;
 }
 
-void extractFileFromImage(const string & dataFileName, const string & imageFileName, uint8_t * key, size_t keyLength) {
-    auto file = DecryptableFileFactory::create(dataFileName, AlgorithmType::aes_encryption);
+AlgorithmType getAlgorithmArg(const string & arg) {
+    AlgorithmType algorithm;
 
-    PNGReader * reader = new PNGReader();
-    reader->open(imageFileName);
-
-    size_t initBufferSize = file->getInitialisationBlockBufferSize();
-    uint8_t * initBuffer = file->getInitialisationBlockBuffer();
-
-    PNGHost host;
-    host.setCloakSecurityLevel(CloakSecurity::security_high);
-    host.extractBlock(reader, initBuffer, initBufferSize);
-
-    LengthBlock initBlock = file->extractInitialisationBlockFromBuffer(initBuffer);
-
-    file->setKey(key, keyLength);
-
-    uint8_t * buffer = file->getAllocatedBlock();
-    size_t blockSize = file->getBlockSize();
-
-    while (file->getBytesLeftToWrite() > 0) {
-        host.extractBlock(reader, buffer, blockSize);
-        file->writeBlock(buffer);
+    if (arg == "aes" || arg == "aes256") {
+        algorithm = AlgorithmType::aes_encryption;
+    }
+    else if (arg == "xor" || arg == "otp") {
+        algorithm = AlgorithmType::xor_encryption;
+    }
+    else if (arg == "none" || arg == "no") {
+        algorithm = AlgorithmType::no_encryption;
+    }
+    else if (arg.length() == 0) {
+        algorithm = AlgorithmType::no_encryption;
+    }
+    else {
+        throw clk_error(clk_error::buildMsg("Invalid algorithm supplied, do not understand '%s'", arg.c_str()));
     }
 
-    delete reader;
-
-    file->close();
+    return algorithm;
 }
 
-void read_write_image(const string & inputFile, const string & outputFile) {
-    PNGReader reader;
-    PNGWriter writer;
+pair<uint8_t *, size_t> getKeyFromUser() {
+    size_t keyBufferLength = (size_t)gcry_md_get_algo_dlen(GCRY_MD_SHA3_256);
 
-    reader.open(inputFile);
+    uint8_t * keyBuffer = (uint8_t *)malloc(keyBufferLength);
 
-    writer.assignImageDetails(reader.getPNGDetails());
-    writer.open(outputFile);
+    if (keyBuffer == NULL) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to allocate %zu bytes for the key", 
+                    keyBufferLength), 
+                __FILE__, 
+                __LINE__);
+    }
 
-    writer.close();
-    reader.close();
+    string password;
+	int i = 0;
+
+    cout << "Enter password: ";
+
+    while (i < MAX_PASSWORD_LENGTH) {
+        int ch = __getch();
+
+        if (ch != '\n' && ch != '\r') {
+            putchar('*');
+            fflush(stdout);
+            password += (char)ch;
+        }
+        else {
+            break;
+        }
+    }
+
+    putchar('\n');
+    fflush(stdout);
+
+	gcry_md_hash_buffer(GCRY_MD_SHA3_256, keyBuffer, password.c_str(), password.length());
+    password.clear();
+
+    pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
+
+    return key;
 }
 
-void test_merge_extract() {
-    uint8_t imgBytes[32] = {
-        0xEC, 0xA7, 0x50, 0xE9, 0xA3, 0x4E, 0xE4, 0x9F, 
-        0x4F, 0xE4, 0x9C, 0x4D, 0xE4, 0x9C, 0x4D, 0xE5,
-        0x9C, 0x4F, 0xE3, 0x9A, 0x4B, 0xE3, 0x99, 0x49, 
-        0xE3, 0x99, 0x48, 0xE4, 0x9A, 0x4B, 0xDE, 0x94};
+pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
+    CloakableInputFile keyFile;
+    keyFile.open(keyFilename);
 
-    uint8_t dataBytes[4] = {0x37, 0x65, 0x42, 0x17};
+    size_t keyBufferLength = keyFile.size();
 
-    /*
-    ** 00000000	ECA7 50E9 A34E E49F  |..P..N..|
-    ** 00000000	EDA7 51E8 A34F E49E  |..Q..O..|
-    **
-    **           1 1  1 0  1 1  0 0
-    */
-    hexDump(imgBytes, 8);
+    uint8_t * keyBuffer = (uint8_t *)malloc(keyBufferLength);
 
-    CloakAlgorithm::mergeBlock(imgBytes, dataBytes, 4, CloakSecurity::security_high);
+    if (keyBuffer == NULL) {
+        keyFile.close();
 
-    hexDump(imgBytes, 8);
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to allocate %zu bytes for the key", 
+                    keyBufferLength), 
+                __FILE__, 
+                __LINE__);
+    }
 
-    CloakAlgorithm::extractBlock(imgBytes, dataBytes, 4, CloakSecurity::security_high);
+    keyFile.read(keyBuffer, keyBufferLength);
 
-    hexDump(dataBytes, 4);
+    keyFile.close();
+
+    pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
+
+    return key;
 }
 
 int main(int argc, char ** argv) {
     int defaultLogLevel = LOG_LEVEL_ALL;
+    string algo;
+    string securityLevel;
+    string operation;
+    string imageFilename;
+    string keyFilename;
+    uint8_t * key;
+    size_t keyLength;
 
     Logger & log = Logger::getInstance();
     log.init("clk.log", defaultLogLevel);
 
-    addFileToImage("/Users/guy/test.dat", "/Users/guy/flowers.png", testKey, 16);
-    extractFileFromImage("/Users/guy/out.dat", "/Users/guy/flowers.png", testKey, 16);
+    CmdArg cmdArg = CmdArg(argc, argv);
 
-    // read_write_image("/Users/guy/flowers.png", "/Users/guy/out.png");
+    for (int i = 0;i < cmdArg.getNumArgs() - 1;i++) {
+        string arg = cmdArg.getArg(i);
 
-    // test_merge_extract();
+        if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
+            operation = arg;
+        }
+        else if (arg == "-algo") {
+            algo = cmdArg.getArg(i + 1);
+            i++;
+        }
+        else if (arg =="-security-level" || arg == "-sl") {
+            securityLevel = cmdArg.getArg(i + 1);
+            i++;
+        }
+        else if (arg == "-i" || arg == "-image") {
+            imageFilename = cmdArg.getArg(i + 1);
+            i++;
+        }
+        else if (arg == "-key" || arg == "-k") {
+            keyFilename = cmdArg.getArg(i + 1);
+            i++;
+        }
+        else {
+            throw clk_error(clk_error::buildMsg("Invalid argument supplied, do not understand '%s'", arg.c_str()));
+        }
+    }
+
+    string dataFilename = cmdArg.getArg(cmdArg.getNumArgs() - 1);
+
+    AlgorithmType algorithm = getAlgorithmArg(algo);
+
+    if (algorithm == AlgorithmType::aes_encryption) {
+        pair<uint8_t *, size_t> keyPair = getKeyFromUser();
+
+        key = keyPair.first;
+        keyLength = keyPair.second;
+    }
+    else if (algorithm == AlgorithmType::xor_encryption) {
+        pair<uint8_t *, size_t> keyPair = getKeyFromFile(keyFilename);
+
+        key = keyPair.first;
+        keyLength = keyPair.second;
+    }
+
+    PNGReader * reader = new PNGReader();
+    reader->open(imageFilename);
+
+    PNGHost host;
+    host.setCloakSecurityLevel(getSecurityLevelArg(securityLevel));
+
+    if (operation == OPERATION_MERGE) {
+        auto file = CloakableFileFactory::createInputFile(dataFilename, algorithm);
+
+        size_t initBufferSize = file->getInitialisationBlockBufferSize();
+        uint8_t * initBuffer = file->getInitialisationBlockBuffer();
+
+        file->fillInitialisationBlockBuffer(initBuffer);
+
+        // Add initialisation block to image...
+        host.addBlock(reader, initBuffer, initBufferSize);
+
+        if (algorithm != AlgorithmType::no_encryption) {
+            file->setKey(key, keyLength);
+        }
+
+        size_t blockSize = file->getBlockSize();
+        uint8_t * buffer = file->getAllocatedBlock();
+
+        while (file->hasMoreBlocks()) {
+            file->readBlock(buffer);
+            host.addBlock(reader, buffer, blockSize);
+        }
+
+        PNGWriter writer;
+        writer.assignImageDetails(reader->getPNGDetails());
+
+        reader->close();
+
+        writer.open(imageFilename);
+        writer.close();
+
+        delete reader;
+    }
+    else if (operation == OPERATION_EXTRACT) {
+        auto file = CloakableFileFactory::createOutputFile(dataFilename, algorithm);
+
+        size_t initBufferSize = file->getInitialisationBlockBufferSize();
+        uint8_t * initBuffer = file->getInitialisationBlockBuffer();
+
+        host.extractBlock(reader, initBuffer, initBufferSize);
+
+        file->extractInitialisationBlockFromBuffer(initBuffer);
+
+        if (algorithm != AlgorithmType::no_encryption) {
+            file->setKey(key, keyLength);
+        }
+
+        uint8_t * buffer = file->getAllocatedBlock();
+        size_t blockSize = file->getBlockSize();
+
+        while (file->getBytesLeftToWrite() > 0) {
+            host.extractBlock(reader, buffer, blockSize);
+            file->writeBlock(buffer);
+        }
+
+        delete reader;
+
+        file->close();
+    }
+    else {
+        throw clk_error("Invalid operation supplied");
+    }
 
     log.close();
 

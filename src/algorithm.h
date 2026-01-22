@@ -10,6 +10,12 @@ using namespace std;
 
 #define DEFAULT_BLOCK_SIZE                  64U
 
+enum class AlgorithmType {
+    aes_encryption,
+    xor_encryption,
+    no_encryption
+};
+
 class EncryptionAlgorithm {
     public:
         virtual ~EncryptionAlgorithm() {

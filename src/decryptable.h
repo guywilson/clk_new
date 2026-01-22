@@ -40,26 +40,12 @@ class DecryptableFile : public CloakableOutputFile {
             return algorithm->getBlockSize();
         }
 
-        inline size_t getBytesLeftToWrite() {
-            return bytesLeftToWrite;
-        }
-
-        inline size_t getBytesToWrite() {
-            return (getBytesLeftToWrite() >= getBlockSize() ? getBlockSize() : getBytesLeftToWrite());
-        }
-
         size_t writeBlock(uint8_t * buffer, size_t bytesToWrite) override {
             log.entry("DecryptableFile::writeBlock()");
 
             size_t blockSize = getBlockSize();
 
-            // cout << "Extracted block:" << endl;
-            // hexDump(buffer, blockSize);
-
             decryptBlock(buffer, blockSize);
-
-            // cout << "Decrypted block:" << endl;
-            // hexDump(buffer, blockSize);
 
             size_t bytesWritten = CloakableOutputFile::writeBlock(buffer, bytesToWrite);
             
@@ -70,11 +56,7 @@ class DecryptableFile : public CloakableOutputFile {
             return bytesWritten;
         }
 
-        size_t writeBlock(uint8_t * buffer) {
-            return writeBlock(buffer, getBytesToWrite());
-        }
-
-        virtual void setKey(uint8_t * key, size_t keyLength) {
+        virtual void setKey(uint8_t * key, size_t keyLength) override {
             this->keyLength = keyLength;
             this->key = (uint8_t *)malloc(keyLength);
 

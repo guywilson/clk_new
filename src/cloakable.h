@@ -80,6 +80,10 @@ class CloakableFile : public BinaryFile {
             return initialisationBlockBuffer;
         }
 
+        virtual void setKey(uint8_t * key, size_t keyLength) {
+            return;
+        }
+
         inline void resetBlockCounter() {
             blockNum = 0;
         }
@@ -116,6 +120,23 @@ class CloakableInputFile : public CloakableFile {
     public:
         void open(const string & filename) override;
 
+        size_t read(uint8_t * buffer, size_t bufferLength) {
+            size_t bytesRead = 0;
+
+            while (hasMoreBlocks()) {
+                size_t bytesLeftToRead = bufferLength - bytesRead;
+
+                if (bytesLeftToRead < getBlockSize()) {
+                    bytesRead += readBlock(&buffer[bytesRead], bytesLeftToRead);
+                }
+                else {
+                    bytesRead += readBlock(&buffer[bytesRead], getBlockSize());
+                }
+            }
+
+            return bytesRead;
+        }
+
         virtual size_t readBlock(uint8_t * buffer) {
             return readBlock(buffer, getBlockSize());
         }
@@ -134,10 +155,6 @@ class CloakableInputFile : public CloakableFile {
 
             addAdditionalInitialisationBlock(initialisationBlockBuffer);
 
-            // if (log.isLogLevel(LOG_LEVEL_INFO)) {
-            //     hexDump(initialisationBlockBuffer, getInitialisationBlockBufferSize());
-            // }
-
             log.exit("CloakableInputFile::fillInitialisationBlockBuffer()");
         }
 };
@@ -152,6 +169,18 @@ class CloakableOutputFile : public CloakableFile {
         void open(const string & filename) override;
 
         virtual size_t writeBlock(uint8_t * buffer, size_t bytesToWrite);
+
+        virtual size_t writeBlock(uint8_t * buffer) {
+            return writeBlock(buffer, getBytesToWrite());
+        }
+
+        inline size_t getBytesLeftToWrite() {
+            return bytesLeftToWrite;
+        }
+
+        inline size_t getBytesToWrite() {
+            return (getBytesLeftToWrite() >= getBlockSize() ? getBlockSize() : getBytesLeftToWrite());
+        }
 
         virtual LengthBlock extractInitialisationBlockFromBuffer(uint8_t * initialisationBlockBuffer) {
             log.entry("CloakableOutputFile::extractInitialisationBlockFromBuffer()");
