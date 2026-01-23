@@ -355,6 +355,8 @@ int main(int argc, char ** argv) {
 
             writer.open(imageFilename);
             writer.close();
+
+            cout << "Finished encrypting and hiding '" << dataFilename << "' within image '" << imageFilename << "'!"<< endl;
         }
         else if (operation == OPERATION_EXTRACT) {
             auto file = CloakableFileFactory::createOutputFile(dataFilename, algorithm);
@@ -380,6 +382,8 @@ int main(int argc, char ** argv) {
 
             file->close();
             reader->close();
+
+            cout << "Finished extracting and decrypting '" << dataFilename << "' from image '" << imageFilename << "'!"<< endl;
         }
         else {
             delete reader;
