@@ -16,7 +16,7 @@ BUILD = build
 DEP = dep
 DOC = doc
 
-#MANSOURCE = $(DOC)/clk.1.md
+MANSOURCE = $(DOC)/clk.1.md
 
 # What is our target
 TARGET = clk
@@ -63,7 +63,7 @@ COMPILE.cpp=$(CPP) $(CPPFLAGS) -o $@
 COMPILE.c=$(C) $(CFLAGS) -o $@
 LINK.o=$(LINKER) -o $@
 
-#PANDOC.md = $(PANDOC) $(PANDOCFLAGS) -o $@
+PANDOC.md = $(PANDOC) $(PANDOCFLAGS) -o $@
 
 CSRCFILES = $(wildcard $(SOURCE)/*.c)
 CPPSRCFILES = $(wildcard $(SOURCE)/*.cpp)
@@ -99,7 +99,7 @@ $(DEP)/%.d: ;
 
 install: $(TARGET)
 	cp $(TARGET) /usr/local/bin
-#	cp $(TARGET).1 /usr/local/share/man/man1
+	cp $(TARGET).1 /usr/local/share/man/man1
 
 version:
 	$(VBUILD) -incfile $(TARGET).ver -template version.c.template -out $(SOURCE)/version.c -major $(MAJOR_VERSION) -minor $(MINOR_VERSION)
