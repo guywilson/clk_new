@@ -53,13 +53,13 @@ I have included a sample PNG file with this distribution - flowers_out.png which
 
 For example, to 'cloak' a file within flowers.png I used the following command:
 
-```clk merge -security high -algo aes -h flowers.png LICENSE
+```clk merge -security high -algo aes -h flowers.png LICENSE```
 
 This tells clk to use merge the file 'LICENSE' into the image 'flowers.png' using an encoding depth of 1-bit per byte.
 
 To 'uncloak' the file from flowers.png, you can use the following command:
 
-```clk extract -security high -algo aes -h flowers.png LICENSE.out
+```clk extract -security high -algo aes -h flowers.png LICENSE.out```
 
 This tells clk to use extract mode to extract the file 'LICENSE.out' from the input image 'flowers.png', again using 1-bit per byte.
 
