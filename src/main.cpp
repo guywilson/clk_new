@@ -175,6 +175,48 @@ pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
     return key;
 }
 
+pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t keyLength) {
+    uint8_t * keyBuffer = (uint8_t *)malloc(keyLength);
+
+    if (keyBuffer == NULL) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to allocate %zu bytes for the key", 
+                    keyLength), 
+                __FILE__, 
+                __LINE__);
+    }
+
+    FILE * fptrRand = fopen("/dev/random", "rb");
+
+    if (fptrRand == NULL) {
+        throw clk_fatal("Failed to open random device for reading", __FILE__, __LINE__);
+    }
+
+    FILE *fptrOutput = fopen(keyFilename.c_str(), "wb");
+
+    if (fptrOutput == NULL) {
+        throw clk_error(
+                clk_error::buildMsg(
+                    "Failed to open otp output file '%s' for writing", 
+                    keyFilename.c_str()),
+                __FILE__,
+                __LINE__);
+    }
+
+    cout << "Wrote " << to_string(keyLength) << " random bytes to '" << keyFilename << "'" << endl << endl;
+
+    fread(keyBuffer, sizeof(uint8_t), keyLength, fptrRand);
+    fwrite(keyBuffer, sizeof(uint8_t), keyLength, fptrOutput);
+
+    fclose(fptrRand);
+    fclose(fptrOutput);
+
+    pair<uint8_t *, size_t> key = {keyBuffer, keyLength};
+
+    return key;
+}
+
 int main(int argc, char ** argv) {
     int defaultLogLevel = LOG_LEVEL_ALL;
     string algo;
@@ -185,6 +227,7 @@ int main(int argc, char ** argv) {
     string keyFilename;
     uint8_t * key;
     size_t keyLength;
+    bool generateKey = false;
 
     CmdArg cmdArg = CmdArg(argc, argv);
 
@@ -206,6 +249,10 @@ int main(int argc, char ** argv) {
         }
         else if (arg == "-key" || arg == "-k") {
             keyFilename = cmdArg.nextArg();
+        }
+        else if (arg == "-g" || arg == "-generate") {
+            keyFilename = cmdArg.nextArg();
+            generateKey = true;
         }
         else if (arg == "-v" || arg == "-version") {
             cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
@@ -231,16 +278,20 @@ int main(int argc, char ** argv) {
         AlgorithmType algorithm = getAlgorithmArg(algo);
 
         if (algorithm == AlgorithmType::aes_encryption) {
+            generateKey = false;
+
             pair<uint8_t *, size_t> keyPair = getKeyFromUser();
 
             key = keyPair.first;
             keyLength = keyPair.second;
         }
         else if (algorithm == AlgorithmType::xor_encryption) {
-            pair<uint8_t *, size_t> keyPair = getKeyFromFile(keyFilename);
+            if (!generateKey) {
+                pair<uint8_t *, size_t> keyPair = getKeyFromFile(keyFilename);
 
-            key = keyPair.first;
-            keyLength = keyPair.second;
+                key = keyPair.first;
+                keyLength = keyPair.second;
+            }
         }
 
         PNGReader * reader = new PNGReader();
@@ -277,7 +328,14 @@ int main(int argc, char ** argv) {
             host.addBlock(reader, initBuffer, initBufferSize);
 
             if (algorithm != AlgorithmType::no_encryption) {
-                file->setKey(key, keyLength);
+                if (generateKey) {
+                    pair<uint8_t *, size_t> keyPair = generateOTP(keyFilename, file->size());
+
+                    file->setKey(keyPair.first, keyPair.second);
+                }
+                else {
+                    file->setKey(key, keyLength);
+                }
             }
 
             size_t blockSize = file->getBlockSize();
