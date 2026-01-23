@@ -26,7 +26,7 @@
 
 using namespace std;
 
-int __getch(void) {
+static int __getch(void) {
 	int		ch;
 
 #ifndef _WIN32
@@ -53,7 +53,7 @@ int __getch(void) {
     return ch;
 }
 
-CloakSecurity getSecurityLevelArg(const string & arg) {
+static CloakSecurity getSecurityLevelArg(const string & arg) {
     CloakSecurity security;
 
     if (arg == "high" || arg == "hi") {
@@ -78,7 +78,7 @@ CloakSecurity getSecurityLevelArg(const string & arg) {
     return security;
 }
 
-AlgorithmType getAlgorithmArg(const string & arg) {
+static AlgorithmType getAlgorithmArg(const string & arg) {
     AlgorithmType algorithm;
 
     if (arg == "aes" || arg == "aes256") {
@@ -100,7 +100,7 @@ AlgorithmType getAlgorithmArg(const string & arg) {
     return algorithm;
 }
 
-pair<uint8_t *, size_t> getKeyFromUser() {
+static pair<uint8_t *, size_t> getKeyFromUser() {
     size_t keyBufferLength = (size_t)gcry_md_get_algo_dlen(GCRY_MD_SHA3_256);
 
     uint8_t * keyBuffer = (uint8_t *)malloc(keyBufferLength);
@@ -147,7 +147,7 @@ pair<uint8_t *, size_t> getKeyFromUser() {
     return key;
 }
 
-pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
+static pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
     CloakableInputFile keyFile;
     keyFile.open(keyFilename);
 
@@ -175,7 +175,7 @@ pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
     return key;
 }
 
-pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t keyLength) {
+static pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t keyLength) {
     uint8_t * keyBuffer = (uint8_t *)malloc(keyLength);
 
     if (keyBuffer == NULL) {
@@ -217,6 +217,20 @@ pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t keyLength
     return key;
 }
 
+static void printUsage() {
+    cout << "Usage: clk [merge|extract] [options] file" << endl;
+    cout << "Hide or extract, an optionally encrypted file in/from the specifed bitmap based host file" << endl;
+    cout << "options:" << endl;
+    cout << "    -h | -host [host file] - currently supports 24-bit PNG images only" << endl;
+    cout << "    -algo [encryption algorithm] (aes|xor|none)" << endl;
+    cout << "    -sl | -security-level [level] (high|medium|low)" << endl;
+    cout << "    -k | -key [keyfile] for XOR encryption use the keyfile as the key" << endl;
+    cout << "    -g | -generate [keyfile] for XOR encryption, generate and use the keyfile as the key" << endl;
+    cout << "    -? | --help show this help and exit" << endl;
+    cout << "    -v | --version print version information and exit" << endl;
+    cout << endl;
+}
+
 int main(int argc, char ** argv) {
     int defaultLogLevel = LOG_LEVEL_ALL;
     string algo;
@@ -235,7 +249,15 @@ int main(int argc, char ** argv) {
     while (cmdArg.hasMoreArgs()) {
         string arg = cmdArg.nextArg();
 
-        if (cmdArg.isLastArg()) {
+        if (arg == "--help" || arg == "-?") {
+            printUsage();
+            return 0;
+        }
+        else if (arg == "-v" || arg == "--version") {
+            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
+            return 0;
+        }
+        else if (cmdArg.isLastArg()) {
             dataFilename = arg;
             break;
         }
@@ -258,10 +280,6 @@ int main(int argc, char ** argv) {
         else if (arg == "-g" || arg == "-generate") {
             keyFilename = cmdArg.nextArg();
             generateKey = true;
-        }
-        else if (arg == "-v" || arg == "-version") {
-            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
-            return 0;
         }
         else {
             cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
@@ -362,7 +380,7 @@ int main(int argc, char ** argv) {
             writer.open(hostFilename);
             writer.close();
 
-            cout << "Finished encrypting and hiding '" << dataFilename << "' within image '" << hostFilename << "'!"<< endl;
+            cout << "Hid '" << dataFilename << "' within host file '" << hostFilename << "'!"<< endl;
         }
         else if (operation == OPERATION_EXTRACT) {
             auto file = CloakableFileFactory::createOutputFile(dataFilename, algorithm);
@@ -389,7 +407,7 @@ int main(int argc, char ** argv) {
             file->close();
             reader->close();
 
-            cout << "Finished extracting and decrypting '" << dataFilename << "' from image '" << hostFilename << "'!"<< endl;
+            cout << "Extracted '" << dataFilename << "' from host file '" << hostFilename << "'!"<< endl;
         }
         else {
             delete reader;

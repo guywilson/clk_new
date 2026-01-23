@@ -38,29 +38,33 @@ Cloak is written in C++ and I have provided a makefile for Unix/Linux using the 
 
 Type clk --help to get help on the command line parameters:
 
-Using clk:
-    clk --help (show this help)
-    clk [options] file
-    options: -h, -host [the host image]
-             -k, -key [keystream file for one-time pad encryption]
-             -sl, -security [high|medium|low|none]
-             -algo [aes|xor|none] - the default is no encryption
-             -g, -generate [keystream file to generate, use and save]
+```
+Usage: clk [merge|extract] [options] file
+Hide or extract, an optionally encrypted file in/from the specifed bitmap based host file
+options:
+    -h | -host [host file] - currently supports 24-bit PNG images only
+    -algo [encryption algorithm] (aes|xor|none)
+    -sl | -security-level [level] (high|medium|low)
+    -k | -key [keyfile] for XOR encryption use the keyfile as the key
+    -g | -generate [keyfile] for XOR encryption, generate and use the keyfile as the key
+    -? | --help show this help and exit
+    -v | --version print version information and exit
+```
 
-flowers_out.png
+car.png
 
-I have included a sample PNG file with this distribution - flowers_out.png which has the LICENSE encoded within it, the password used to encrypt the file is 'password', however you should use a strong password in real-world applications, see the tips on password strength above.
+I have included a sample PNG file with this distribution - car.png which has a PDF document encoded within it, the password used to encrypt the file is 'password', however you should use a strong password in real-world applications, see the tips on password strength above.
 
-For example, to 'cloak' a file within flowers.png I used the following command:
+For example, to 'cloak' a file within car.png I used the following command:
 
-```clk merge -security high -algo aes -h flowers.png LICENSE```
+```clk merge -security-level high -algo aes -h car.png clk.pdf```
 
-This tells clk to use merge the file 'LICENSE' into the image 'flowers.png' using an encoding depth of 1-bit per byte.
+This tells clk to use merge the file 'clk.pdf' into the image 'car.png' using an encoding depth of 1-bit per byte.
 
-To 'uncloak' the file from flowers.png, you can use the following command:
+To 'uncloak' the file from car.png, you can use the following command:
 
-```clk extract -security high -algo aes -h flowers.png LICENSE.out```
+```clk extract -security-level high -algo aes -h car.png out.pdf```
 
-This tells clk to use extract mode to extract the file 'LICENSE.out' from the input image 'flowers.png', again using 1-bit per byte.
+This tells clk to use extract mode to extract the file 'out.pdf' from the input image 'car.png', again using 1-bit per byte.
 
 Have fun!
