@@ -72,20 +72,6 @@ class EncryptableFile : public CloakableInputFile {
 };
 
 class AESEncryptableFile : public EncryptableFile {
-    private:
-        size_t getEncryptedFileSizeDifference() {
-            size_t blockSize = algorithm->getBlockSize();
-            size_t difference = 0;
-
-            size_t remainder = size() % blockSize;
-
-            if (remainder) {
-                difference = blockSize - remainder;
-            }
-
-            return difference;
-        }
-
     protected:
         void encryptBlock(uint8_t * buffer, size_t bufferLength) override;
 
@@ -98,6 +84,19 @@ class AESEncryptableFile : public EncryptableFile {
             return 64;
         }
 
+        size_t getInitBlockFileSizeDifference() override {
+            size_t blockSize = algorithm->getBlockSize();
+            size_t difference = 0;
+
+            size_t remainder = size() % blockSize;
+
+            if (remainder) {
+                difference = blockSize - remainder;
+            }
+
+            return difference;
+        }
+
     public:
         AESEncryptableFile() {
             algorithm = new AESEncryptionAlgorithm();
@@ -105,31 +104,6 @@ class AESEncryptableFile : public EncryptableFile {
 
         size_t getInitialisationBlockBufferSize() override {
             return CloakableFile::getInitialisationBlockBufferSize() + getBlockSize();
-        }
-
-        void fillInitialisationBlockBuffer(uint8_t * initialisationBlockBuffer) override  {
-            log.entry("AESEncryptableFile::fillInitialisationBlockBuffer()");
-
-            LengthBlock block = {(cloaked_len_t)size(), (uint8_t)getEncryptedFileSizeDifference()};
-
-            log.debug(
-                "Length block: originalSize = %zu, encryptedDiff = %zu", 
-                (size_t)block.originalFileLength, 
-                (size_t)block.encryptedLengthIncrease);
-
-            memcpy(initialisationBlockBuffer, &block, CLOAKED_LENGTH_BLOCK_SIZE);
-            addAdditionalInitialisationBlock(initialisationBlockBuffer);
-
-            size_t bufferLength = getInitialisationBlockBufferSize();
-
-            XOREncryptionAlgorithm algo;
-            algo.encryptBlock(
-                    initialisationBlockBuffer, 
-                    bufferLength, 
-                    &random_block[getInitBlockEncryptionOffset()], 
-                    bufferLength);
-
-            log.exit("AESEncryptableFile::fillInitialisationBlockBuffer()");
         }
 };
 

@@ -123,6 +123,10 @@ class CloakableInputFile : public CloakableFile {
     protected:
         virtual void addAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) {}
 
+        virtual size_t getInitBlockFileSizeDifference() {
+            return 0;
+        }
+
     public:
         void open(const string & filename) override;
 
@@ -155,10 +159,15 @@ class CloakableInputFile : public CloakableFile {
 
         virtual void fillInitialisationBlockBuffer(uint8_t * initialisationBlockBuffer) {
             log.entry("CloakableInputFile::fillInitialisationBlockBuffer()");
-            LengthBlock block = {(cloaked_len_t)size(), 0};
 
-            memcpy(initialisationBlockBuffer, &block, getInitialisationBlockBufferSize());
+            LengthBlock block = {(cloaked_len_t)size(), (uint8_t)getInitBlockFileSizeDifference()};
 
+            log.debug(
+                "Length block: originalSize = %zu, encryptedDiff = %zu", 
+                (size_t)block.originalFileLength, 
+                (size_t)block.encryptedLengthIncrease);
+
+            memcpy(initialisationBlockBuffer, &block, CLOAKED_LENGTH_BLOCK_SIZE);
             addAdditionalInitialisationBlock(initialisationBlockBuffer);
 
             size_t bufferLength = getInitialisationBlockBufferSize();
