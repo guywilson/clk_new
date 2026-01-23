@@ -1,4 +1,4 @@
-#CLK
+# CLK
 
 A new version of cloak, re-designed and re-engineered from the bottom up.
 
@@ -18,11 +18,11 @@ The rules are simple, but break one or more of them, it becomes relatively easy 
 
 Of course, any encryption scheme is useless if some third party has got hold of your encryption key.
 
-##Some tips regarding password strength
+## Some tips regarding password strength
 
 A good password is one that cannot be broken using a dictionary attack, e.g. don't use a word from the dictionary or a derivation of. Use a made-up word or phrase with symbols and numbers, better still a random string of characters. In the context of this software, an important aspect is getting the password or keystream to your intended audience securely. It is also imperative that you do not re-use a key, it may be prudent to agree a unique and random set of keys with your audience in advance.
 
-###References:
+### References:
 
 https://en.wikipedia.org/wiki/Dictionary_attack
 
@@ -30,11 +30,11 @@ https://en.wikipedia.org/wiki/Password_strength
 
 https://www.random.org/
 
-##Building clk
+## Building clk
 
 Cloak is written in C++ and I have provided a makefile for Unix/Linux using the g++ compiler (tested on Mac OS). Cloak depends on the 3rd party libraries libpng (http://libpng.org) and libgcrypt (https://www.gnupg.org/software/libgcrypt/index.html) (for the encryption and hashing algorithms, part of GPG).
 
-##Using clk
+## Using clk
 
 Type clk --help to get help on the command line parameters:
 
