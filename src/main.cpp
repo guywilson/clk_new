@@ -235,6 +235,11 @@ int main(int argc, char ** argv) {
     while (cmdArg.hasMoreArgs()) {
         string arg = cmdArg.nextArg();
 
+        if (cmdArg.isLastArg()) {
+            dataFilename = arg;
+            break;
+        }
+
         if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
             operation = arg;
         }
@@ -258,8 +263,9 @@ int main(int argc, char ** argv) {
             cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
             return 0;
         }
-        else if (cmdArg.isLastArg()) {
-            dataFilename = arg;
+        else {
+            cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
+            return -1;
         }
     }
 
