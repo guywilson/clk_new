@@ -332,19 +332,19 @@ int main(int argc, char ** argv) {
 
             file->fillInitialisationBlockBuffer(initBuffer);
 
-            size_t imageCapacity = reader->getCapacity(initBufferSize, getSecurityLevelArg(securityLevel));
+            size_t hostCapacity = reader->getCapacity(initBufferSize, getSecurityLevelArg(securityLevel));
 
-            if (file->size() > imageCapacity) {
+            if (file->size() > hostCapacity) {
                 delete reader;
                 file->close();
 
                 throw clk_error(
                     clk_error::buildMsg(
-                        "The selected file '%s' (%zu bytes) is too large for the selected image '%s' (capacity %zu bytes)",
+                        "The selected file '%s' (%zu bytes) is too large for the selected host '%s' (capacity %zu bytes)",
                         dataFilename.c_str(),
                         file->size(),
                         hostFilename.c_str(),
-                        imageCapacity), 
+                        hostCapacity), 
                     __FILE__, __LINE__);
             }
 
