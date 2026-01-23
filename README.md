@@ -51,7 +51,7 @@ options:
     -v | --version print version information and exit
 ```
 
-[car.png]
+![car](car.png)
 
 I have included a sample PNG file with this distribution - car.png which has a PDF document encoded within it, the password used to encrypt the file is 'password', however you should use a strong password in real-world applications, see the tips on password strength above.
 
