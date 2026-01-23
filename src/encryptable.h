@@ -94,6 +94,10 @@ class AESEncryptableFile : public EncryptableFile {
             memcpy(&initialisationBlockBuffer[CLOAKED_LENGTH_BLOCK_SIZE], iv, getBlockSize());
         }
 
+        int getInitBlockEncryptionOffset() override {
+            return 64;
+        }
+
     public:
         AESEncryptableFile() {
             algorithm = new AESEncryptionAlgorithm();
@@ -119,7 +123,11 @@ class AESEncryptableFile : public EncryptableFile {
             size_t bufferLength = getInitialisationBlockBufferSize();
 
             XOREncryptionAlgorithm algo;
-            algo.encryptBlock(initialisationBlockBuffer, bufferLength, &random_block[64], bufferLength);
+            algo.encryptBlock(
+                    initialisationBlockBuffer, 
+                    bufferLength, 
+                    &random_block[getInitBlockEncryptionOffset()], 
+                    bufferLength);
 
             log.exit("AESEncryptableFile::fillInitialisationBlockBuffer()");
         }

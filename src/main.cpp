@@ -264,11 +264,11 @@ int main(int argc, char ** argv) {
     }
 
 #else
-    operation = "merge";
+    operation = "extract";
     algo = "aes256";
     securityLevel = "high";
     imageFilename = "/Users/guy/flowers.png";
-    dataFilename = "/Users/guy/BAU-E2E.pptx";
+    dataFilename = "/Users/guy/out.pptx";
 #endif
 
     Logger & log = Logger::getInstance();

@@ -51,6 +51,10 @@ class CloakableFile : public BinaryFile {
             return blockNum == 0 ? true : false;
         }
 
+        virtual int getInitBlockEncryptionOffset() {
+            return 256;
+        }
+
     public:
         virtual ~CloakableFile() {
             close();
@@ -160,7 +164,11 @@ class CloakableInputFile : public CloakableFile {
             size_t bufferLength = getInitialisationBlockBufferSize();
 
             XOREncryptionAlgorithm algo;
-            algo.encryptBlock(initialisationBlockBuffer, bufferLength, &random_block[256], bufferLength);
+            algo.encryptBlock(
+                    initialisationBlockBuffer, 
+                    bufferLength, 
+                    &random_block[getInitBlockEncryptionOffset()], 
+                    bufferLength);
 
             log.exit("CloakableInputFile::fillInitialisationBlockBuffer()");
         }
@@ -195,7 +203,11 @@ class CloakableOutputFile : public CloakableFile {
             size_t bufferLength = getInitialisationBlockBufferSize();
 
             XOREncryptionAlgorithm algo;
-            algo.decryptBlock(initialisationBlockBuffer, bufferLength, &random_block[256], bufferLength);
+            algo.decryptBlock(
+                    initialisationBlockBuffer, 
+                    bufferLength, 
+                    &random_block[getInitBlockEncryptionOffset()], 
+                    bufferLength);
 
             LengthBlock block;
             memcpy(&block, initialisationBlockBuffer, CLOAKED_LENGTH_BLOCK_SIZE);

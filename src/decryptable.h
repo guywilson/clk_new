@@ -90,6 +90,10 @@ class AESDecryptableFile : public DecryptableFile {
             log.exit("AESDecryptableFile::extractAdditionalInitialisationBlock()");
         }
 
+        int getInitBlockEncryptionOffset() override {
+            return 64;
+        }
+
     public:
         AESDecryptableFile() {
             algorithm = new AESEncryptionAlgorithm();
