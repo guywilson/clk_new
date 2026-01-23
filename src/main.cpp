@@ -222,7 +222,7 @@ int main(int argc, char ** argv) {
     string algo;
     string securityLevel;
     string operation;
-    string imageFilename;
+    string hostFilename;
     string dataFilename;
     string keyFilename;
     uint8_t * key;
@@ -244,8 +244,8 @@ int main(int argc, char ** argv) {
         else if (arg =="-security-level" || arg == "-sl") {
             securityLevel = cmdArg.nextArg();
         }
-        else if (arg == "-i" || arg == "-image") {
-            imageFilename = cmdArg.nextArg();
+        else if (arg == "-h" || arg == "-host") {
+            hostFilename = cmdArg.nextArg();
         }
         else if (arg == "-key" || arg == "-k") {
             keyFilename = cmdArg.nextArg();
@@ -267,7 +267,7 @@ int main(int argc, char ** argv) {
     operation = "extract";
     algo = "aes256";
     securityLevel = "high";
-    imageFilename = "/Users/guy/flowers.png";
+    hostFilename = "/Users/guy/flowers.png";
     dataFilename = "/Users/guy/out.pptx";
 #endif
 
@@ -295,7 +295,7 @@ int main(int argc, char ** argv) {
         }
 
         PNGReader * reader = new PNGReader();
-        reader->open(imageFilename);
+        reader->open(hostFilename);
 
         PNGHost host;
         host.setCloakSecurityLevel(getSecurityLevelArg(securityLevel));
@@ -319,7 +319,7 @@ int main(int argc, char ** argv) {
                         "The selected file '%s' (%zu bytes) is too large for the selected image '%s' (capacity %zu bytes)",
                         dataFilename.c_str(),
                         file->size(),
-                        imageFilename.c_str(),
+                        hostFilename.c_str(),
                         imageCapacity), 
                     __FILE__, __LINE__);
             }
@@ -353,10 +353,10 @@ int main(int argc, char ** argv) {
 
             reader->close();
 
-            writer.open(imageFilename);
+            writer.open(hostFilename);
             writer.close();
 
-            cout << "Finished encrypting and hiding '" << dataFilename << "' within image '" << imageFilename << "'!"<< endl;
+            cout << "Finished encrypting and hiding '" << dataFilename << "' within image '" << hostFilename << "'!"<< endl;
         }
         else if (operation == OPERATION_EXTRACT) {
             auto file = CloakableFileFactory::createOutputFile(dataFilename, algorithm);
@@ -383,7 +383,7 @@ int main(int argc, char ** argv) {
             file->close();
             reader->close();
 
-            cout << "Finished extracting and decrypting '" << dataFilename << "' from image '" << imageFilename << "'!"<< endl;
+            cout << "Finished extracting and decrypting '" << dataFilename << "' from image '" << hostFilename << "'!"<< endl;
         }
         else {
             delete reader;
