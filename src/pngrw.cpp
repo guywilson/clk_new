@@ -185,7 +185,7 @@ void PNGWriter::onOpen() {
 	/* Set up the input control if you are using standard C streams */
 	png_init_io(imageDetails.image_handle, fptr);
 
-    png_set_compression_level(imageDetails.image_handle, 3);
+    png_set_compression_level(imageDetails.image_handle, 7);
 
     png_set_IHDR(
             imageDetails.image_handle, 
