@@ -145,7 +145,6 @@ int main(int argc, char ** argv) {
             return -1;
         }
     }
-
 #else
     operation = "extract";
     algo = "aes256";
