@@ -226,6 +226,7 @@ static void printUsage() {
     cout << "    -sl | -security-level [level] (high|medium|low)" << endl;
     cout << "    -k | -key [keyfile] for XOR encryption use the keyfile as the key" << endl;
     cout << "    -g | -generate [keyfile] for XOR encryption, generate and use the keyfile as the key" << endl;
+    cout << "    -c | --capacity report the capacity of the host file and exit" << endl;
     cout << "    -? | --help show this help and exit" << endl;
     cout << "    -v | --version print version information and exit" << endl;
     cout << endl;
@@ -242,25 +243,13 @@ int main(int argc, char ** argv) {
     uint8_t * key;
     size_t keyLength;
     bool generateKey = false;
+    bool reportCapacity = false;
 
     CmdArg cmdArg = CmdArg(argc, argv);
 
 #ifndef RUN_IN_DEBUGGER
     while (cmdArg.hasMoreArgs()) {
         string arg = cmdArg.nextArg();
-
-        if (arg == "--help" || arg == "-?") {
-            printUsage();
-            return 0;
-        }
-        else if (arg == "-v" || arg == "--version") {
-            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
-            return 0;
-        }
-        else if (cmdArg.isLastArg()) {
-            dataFilename = arg;
-            break;
-        }
 
         if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
             operation = arg;
@@ -271,15 +260,30 @@ int main(int argc, char ** argv) {
         else if (arg =="-security-level" || arg == "-sl") {
             securityLevel = cmdArg.nextArg();
         }
-        else if (arg == "-h" || arg == "-host") {
+        else if (arg == "-host" || arg == "-h") {
             hostFilename = cmdArg.nextArg();
         }
         else if (arg == "-key" || arg == "-k") {
             keyFilename = cmdArg.nextArg();
         }
-        else if (arg == "-g" || arg == "-generate") {
+        else if (arg == "-generate" || arg == "-g") {
             keyFilename = cmdArg.nextArg();
             generateKey = true;
+        }
+        else if (arg == "--capacity" || arg == "-c") {
+            reportCapacity = true;
+        }
+        else if (arg == "--help" || arg == "-?") {
+            printUsage();
+            return 0;
+        }
+        else if (arg == "--version" || arg == "-v") {
+            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
+            return 0;
+        }
+        else if (cmdArg.isLastArg()) {
+            dataFilename = arg;
+            break;
         }
         else {
             cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
@@ -299,6 +303,26 @@ int main(int argc, char ** argv) {
     log.init("clk.log", defaultLogLevel);
 
     try {
+        PNGReader * reader = new PNGReader();
+        reader->open(hostFilename);
+
+        size_t hostCapacity = reader->getCapacity(CLOAKED_LENGTH_BLOCK_SIZE, getSecurityLevelArg(securityLevel));
+        
+        if (reportCapacity) {
+            cout << 
+                "Host file max capacity at the selected security level is " << 
+                to_string(hostCapacity) << 
+                " bytes." << 
+                endl;
+
+            reader->close();
+            delete reader;
+
+            log.close();
+
+            return 0;
+        }
+
         AlgorithmType algorithm = getAlgorithmArg(algo);
 
         if (algorithm == AlgorithmType::aes_encryption) {
@@ -318,9 +342,6 @@ int main(int argc, char ** argv) {
             }
         }
 
-        PNGReader * reader = new PNGReader();
-        reader->open(hostFilename);
-
         PNGHost host;
         host.setCloakSecurityLevel(getSecurityLevelArg(securityLevel));
 
@@ -332,11 +353,14 @@ int main(int argc, char ** argv) {
 
             file->fillInitialisationBlockBuffer(initBuffer);
 
-            size_t hostCapacity = reader->getCapacity(initBufferSize, getSecurityLevelArg(securityLevel));
+            hostCapacity = reader->getCapacity(initBufferSize, getSecurityLevelArg(securityLevel));
 
             if (file->size() > hostCapacity) {
+                reader->close();
                 delete reader;
                 file->close();
+
+                log.close();
 
                 throw clk_error(
                     clk_error::buildMsg(
@@ -410,8 +434,13 @@ int main(int argc, char ** argv) {
             cout << "Extracted '" << dataFilename << "' from host file '" << hostFilename << "'!"<< endl;
         }
         else {
+            reader->close();
             delete reader;
-            throw clk_error("Invalid operation supplied");
+
+            throw clk_error(
+                    clk_error::buildMsg(
+                        "Invalid operation supplied '%s'", 
+                        operation.c_str()));
         }
 
         delete reader;

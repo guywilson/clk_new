@@ -47,6 +47,7 @@ options:
     -sl | -security-level [level] (high|medium|low)
     -k | -key [keyfile] for XOR encryption use the keyfile as the key
     -g | -generate [keyfile] for XOR encryption, generate and use the keyfile as the key
+    -c | --capacity report the capacity of the host file and exit
     -? | --help show this help and exit
     -v | --version print version information and exit
 ```

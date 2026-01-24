@@ -82,6 +82,11 @@ to encrypt your file before exiting, so can be used in the same way as
 the \-k option.
 See the \-k option for the rules around OTP encryption.
 .PP
+\f[B]\-c, \(encapacity\f[R]
+.PP
+Report the capacity of the host file specified with \-host at the
+specified security level and exit.
+.PP
 \f[B]\(enversion, \-v\f[R]
 .PP
 Prints the version information of the clk program and exits.
@@ -98,6 +103,10 @@ the highest security level:
 To `uncloak' file out.dat from test.png using AES\-256 encryption:
 .PP
 \f[CR]clk extract \-security\-level high \-algo aes \-host test.png out.dat\f[R]
+.PP
+To report the capacity of test.png using the highest security level:
+.PP
+\f[CR]clk merge \-security\-level high \-host test.png \-\-capacity\f[R]
 .SH AUTHOR
 Written by Guy Wilson.
 .SH COPYRIGHT

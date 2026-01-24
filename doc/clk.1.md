@@ -56,7 +56,11 @@ Supply a key file for XOR encryption, clk will abort with an error if key file i
 **-g, -generate [key file]**
 
 This will generate random data the same length as your file to encrypt with XOR encryption and save it to your key file, pfm will use the data to encrypt your file before exiting, so can be used in the same way as the -k option. See the -k option for the rules around OTP encryption.
- 
+
+**-c, --capacity**
+
+Report the capacity of the host file specified with -host at the specified security level and exit.
+
 **--version, -v**
 
 Prints the version information of the clk program and exits.
@@ -74,6 +78,10 @@ To 'cloak' file clk.dat using AES-256 encryption within test.png using the highe
 To 'uncloak' file out.dat from test.png using AES-256 encryption:
 
 ```clk extract -security-level high -algo aes -host test.png out.dat```
+
+To report the capacity of test.png using the highest security level:
+
+```clk merge -security-level high -host test.png --capacity```
 
 # AUTHOR
 
