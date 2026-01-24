@@ -12,46 +12,20 @@
 #include "cloakable.h"
 #include "encryptable.h"
 #include "decryptable.h"
+#include "algorithm.h"
 #include "pnghost.h"
 #include "pngrw.h"
 #include "cloak.h"
 #include "logger.h"
 #include "cmdarg.h"
+#include "key.h"
 #include "version.h"
 #include "xdump.h"
 
 #define OPERATION_MERGE                 "merge"
 #define OPERATION_EXTRACT               "extract"
-#define MAX_PASSWORD_LENGTH             256
 
 using namespace std;
-
-static int __getch(void) {
-	int		ch;
-
-#ifndef _WIN32
-	struct termios current;
-	struct termios original;
-
-	tcgetattr(fileno(stdin), &original); /* grab old terminal i/o settings */
-	current = original; /* make new settings same as old settings */
-	current.c_lflag &= ~ICANON; /* disable buffered i/o */
-	current.c_lflag &= ~ECHO; /* set echo mode */
-	tcsetattr(fileno(stdin), TCSANOW, &current); /* use these new terminal i/o settings now */
-#endif
-
-#ifdef _WIN32
-    ch = _getch();
-#else
-    ch = getchar();
-#endif
-
-#ifndef _WIN32
-	tcsetattr(0, TCSANOW, &original);
-#endif
-
-    return ch;
-}
 
 static CloakSecurity getSecurityLevelArg(const string & arg) {
     CloakSecurity security;
@@ -98,143 +72,6 @@ static AlgorithmType getAlgorithmArg(const string & arg) {
     }
 
     return algorithm;
-}
-
-static pair<uint8_t *, size_t> getKeyFromUser() {
-    size_t keyBufferLength = (size_t)gcry_md_get_algo_dlen(GCRY_MD_SHA3_256);
-
-    uint8_t * keyBuffer = (uint8_t *)malloc(keyBufferLength);
-
-    if (keyBuffer == NULL) {
-        throw clk_error(
-                clk_error::buildMsg(
-                    "Failed to allocate %zu bytes for the key", 
-                    keyBufferLength), 
-                __FILE__, 
-                __LINE__);
-    }
-
-#ifndef RUN_IN_DEBUGGER
-    string password;
-	int i = 0;
-
-    cout << "Enter password: ";
-
-    while (i < MAX_PASSWORD_LENGTH) {
-        int ch = __getch();
-
-        if (ch != '\n' && ch != '\r') {
-            putchar('*');
-            fflush(stdout);
-            password += (char)ch;
-        }
-        else {
-            break;
-        }
-    }
-
-    putchar('\n');
-    fflush(stdout);
-#else
-    string password = "password";
-#endif
-
-	gcry_md_hash_buffer(GCRY_MD_SHA3_256, keyBuffer, password.c_str(), password.length());
-    password.clear();
-
-    pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
-
-    return key;
-}
-
-static pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
-    CloakableInputFile keyFile;
-    keyFile.open(keyFilename);
-
-    size_t keyBufferLength = keyFile.size();
-
-    uint8_t * keyBuffer = (uint8_t *)malloc(keyBufferLength);
-
-    if (keyBuffer == NULL) {
-        keyFile.close();
-
-        throw clk_error(
-                clk_error::buildMsg(
-                    "Failed to allocate %zu bytes for the key", 
-                    keyBufferLength), 
-                __FILE__, 
-                __LINE__);
-    }
-
-    keyFile.read(keyBuffer, keyBufferLength);
-
-    keyFile.close();
-
-    pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
-
-    return key;
-}
-
-static pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t keyLength) {
-    uint8_t * keyBuffer = (uint8_t *)malloc(keyLength);
-
-    if (keyBuffer == NULL) {
-        throw clk_error(
-                clk_error::buildMsg(
-                    "Failed to allocate %zu bytes for the key", 
-                    keyLength), 
-                __FILE__, 
-                __LINE__);
-    }
-
-    FILE * fptrRand = fopen("/dev/random", "rb");
-
-    if (fptrRand == NULL) {
-        throw clk_fatal("Failed to open random device for reading", __FILE__, __LINE__);
-    }
-
-    FILE *fptrOutput = fopen(keyFilename.c_str(), "wb");
-
-    if (fptrOutput == NULL) {
-        throw clk_error(
-                clk_error::buildMsg(
-                    "Failed to open otp output file '%s' for writing", 
-                    keyFilename.c_str()),
-                __FILE__,
-                __LINE__);
-    }
-
-    cout << "Wrote " << to_string(keyLength) << " random bytes to '" << keyFilename << "'" << endl << endl;
-
-    fread(keyBuffer, sizeof(uint8_t), keyLength, fptrRand);
-    fwrite(keyBuffer, sizeof(uint8_t), keyLength, fptrOutput);
-
-    fclose(fptrRand);
-    fclose(fptrOutput);
-
-    pair<uint8_t *, size_t> key = {keyBuffer, keyLength};
-
-    return key;
-}
-
-static pair<uint8_t *, size_t> getKey(AlgorithmType & algorithm, bool generateKey, const string & keyFilename, size_t keyLength) {
-    pair<uint8_t *, size_t> keyPair;
-
-    if (!generateKey) {
-        if (algorithm == AlgorithmType::aes_encryption) {
-            keyPair = getKeyFromUser();
-        }
-        else if (algorithm == AlgorithmType::xor_encryption) {
-            keyPair = getKeyFromFile(keyFilename);
-        }
-    }
-    else {
-        if (algorithm == AlgorithmType::xor_encryption) {
-            keyPair = generateOTP(keyFilename, keyLength);
-        }
-    }
-
-    return keyPair;
 }
 
 static void printUsage() {
