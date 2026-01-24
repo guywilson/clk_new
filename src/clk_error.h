@@ -18,7 +18,7 @@ class clk_error : public exception
 
     public:
         const char * getTitle() {
-            return "PFM error: ";
+            return "CLK error: ";
         }
 
         clk_error() {
