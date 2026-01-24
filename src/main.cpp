@@ -217,6 +217,26 @@ static pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t ke
     return key;
 }
 
+static pair<uint8_t *, size_t> getKey(AlgorithmType & algorithm, bool generateKey, const string & keyFilename, size_t keyLength) {
+    pair<uint8_t *, size_t> keyPair;
+
+    if (!generateKey) {
+        if (algorithm == AlgorithmType::aes_encryption) {
+            keyPair = getKeyFromUser();
+        }
+        else if (algorithm == AlgorithmType::xor_encryption) {
+            keyPair = getKeyFromFile(keyFilename);
+        }
+    }
+    else {
+        if (algorithm == AlgorithmType::xor_encryption) {
+            keyPair = generateOTP(keyFilename, keyLength);
+        }
+    }
+
+    return keyPair;
+}
+
 static void printUsage() {
     cout << "Usage: clk [merge|extract] [options] file" << endl;
     cout << "Hide or extract, an optionally encrypted file in/from the specifed bitmap based host file" << endl;
@@ -240,8 +260,6 @@ int main(int argc, char ** argv) {
     string hostFilename;
     string dataFilename;
     string keyFilename;
-    uint8_t * key;
-    size_t keyLength;
     bool generateKey = false;
     bool reportCapacity = false;
 
@@ -325,22 +343,7 @@ int main(int argc, char ** argv) {
 
         AlgorithmType algorithm = getAlgorithmArg(algo);
 
-        if (algorithm == AlgorithmType::aes_encryption) {
-            generateKey = false;
-
-            pair<uint8_t *, size_t> keyPair = getKeyFromUser();
-
-            key = keyPair.first;
-            keyLength = keyPair.second;
-        }
-        else if (algorithm == AlgorithmType::xor_encryption) {
-            if (!generateKey) {
-                pair<uint8_t *, size_t> keyPair = getKeyFromFile(keyFilename);
-
-                key = keyPair.first;
-                keyLength = keyPair.second;
-            }
-        }
+        generateKey = (algorithm == AlgorithmType::aes_encryption) ? false : generateKey;
 
         PNGHost host;
         host.setCloakSecurityLevel(getSecurityLevelArg(securityLevel));
@@ -376,14 +379,8 @@ int main(int argc, char ** argv) {
             host.addBlock(reader, initBuffer, initBufferSize);
 
             if (algorithm != AlgorithmType::no_encryption) {
-                if (generateKey) {
-                    pair<uint8_t *, size_t> keyPair = generateOTP(keyFilename, file->size());
-
-                    file->setKey(keyPair.first, keyPair.second);
-                }
-                else {
-                    file->setKey(key, keyLength);
-                }
+                pair<uint8_t *, size_t> keyPair = getKey(algorithm, generateKey, keyFilename, file->size());
+                file->setKey(keyPair.first, keyPair.second);
             }
 
             size_t blockSize = file->getBlockSize();
@@ -417,7 +414,8 @@ int main(int argc, char ** argv) {
             file->extractInitialisationBlockFromBuffer(initBuffer);
 
             if (algorithm != AlgorithmType::no_encryption) {
-                file->setKey(key, keyLength);
+                pair<uint8_t *, size_t> keyPair = getKey(algorithm, generateKey, keyFilename, file->size());
+                file->setKey(keyPair.first, keyPair.second);
             }
 
             uint8_t * buffer = file->getAllocatedBlock();
